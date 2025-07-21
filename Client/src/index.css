@@ -1,0 +1,181 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Dark Theme Design System - Modern, Focused, Professional */
+
+@layer base {
+  :root {
+    /* Light Theme */
+    --background: 0 0% 100%;
+    --foreground: 252 5% 19%;
+
+    /* Card System */
+    --card: 0 0% 100%;
+    --card-foreground: 252 5% 19%;
+
+    /* Popover System */
+    --popover: 0 0% 100%;
+    --popover-foreground: 252 5% 19%;
+
+    /* Primary Brand - Accent Blue */
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 217 91% 75%;
+    --primary-dark: 217 91% 45%;
+
+    /* Secondary - Success Green */
+    --secondary: 142 76% 36%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-light: 142 76% 50%;
+
+    /* Neutral System */
+    --muted: 210 40% 98%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    /* Accent - Interactive Elements */
+    --accent: 210 40% 98%;
+    --accent-foreground: 222.2 84% 4.9%;
+
+    /* States */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+
+    /* Interactive Elements */
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 217 91% 60%;
+
+    --radius: 0.5rem;
+
+    /* Task-specific colors */
+    --task-active: 217 91% 60%;
+    --task-completed: 142 76% 36%;
+    --task-pending: 38 92% 50%;
+    --task-overdue: 0 84% 60%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(217 91% 60%),
+      hsl(217 91% 75%)
+    );
+    --gradient-success: linear-gradient(
+      135deg,
+      hsl(142 76% 36%),
+      hsl(142 76% 50%)
+    );
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(210 40% 98%));
+
+    /* Shadows */
+    --shadow-card: 0 1px 3px 0 hsl(0 0% 0% / 0.1),
+      0 1px 2px -1px hsl(0 0% 0% / 0.1);
+    --shadow-active: 0 4px 6px -1px hsl(217 91% 60% / 0.1);
+    --shadow-hover: 0 4px 6px -1px hsl(217 91% 60% / 0.15);
+
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    /* Sidebar */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 252 5% 19%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 40% 98%;
+    --sidebar-accent-foreground: 222.2 84% 4.9%;
+    --sidebar-border: 214.3 31.8% 91.4%;
+    --sidebar-ring: 217 91% 60%;
+  }
+
+  .dark {
+    /* Dark Theme */
+    --background: 252 5% 19%;
+    --foreground: 0 0% 100%;
+
+    --card: 210 6% 21%;
+    --card-foreground: 0 0% 100%;
+
+    --popover: 210 6% 21%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 142 76% 36%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 210 6% 21%;
+    --muted-foreground: 140 2% 49%;
+
+    --accent: 210 6% 25%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 210 6% 30%;
+    --input: 210 6% 21%;
+    --ring: 217 91% 60%;
+
+    --sidebar-background: 252 5% 19%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 6% 21%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 210 6% 30%;
+    --sidebar-ring: 217 91% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border transition-colors duration-300 ease-in-out;
+    /* transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); */
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    /* transition: background-color 0.3s ease, color 0.3s ease; */
+  }
+}
+
+/* Neon glow effect */
+.neon-glow {
+  text-shadow: 0 0 5px hsl(var(--primary)), 0 0 10px hsl(var(--primary)),
+    0 0 15px hsl(var(--primary));
+  box-shadow: 0 0 5px hsl(var(--primary)), 0 0 10px hsl(var(--primary)),
+    0 0 15px hsl(var(--primary));
+}
+.countdown-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* teal background like in your image */
+  padding: 20px;
+  border-radius: 12px;
+}
+
+@layer utilities {
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.4s ease-in-out;
+  }
+}
