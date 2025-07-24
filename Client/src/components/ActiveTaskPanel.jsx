@@ -1,5 +1,6 @@
 // ActiveTaskPanel.jsx
 import { useState, useEffect } from "react";
+import './AddTaskDialog.css'
 import {
   Maximize,
   Play,

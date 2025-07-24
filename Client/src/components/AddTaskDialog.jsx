@@ -11,8 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import apiClient from "./../lib/ApiClient";
-import { DatePicker, Space, TimePicker } from "antd";
 import {
   Select,
   SelectContent,
@@ -21,6 +19,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import apiClient from "./../lib/ApiClient";
+
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+
 const colors = [
   { name: "Blue", value: "bg-primary", color: "hsl(217 91% 60%)" },
   { name: "Green", value: "bg-secondary", color: "hsl(142 76% 36%)" },
@@ -47,7 +50,6 @@ const weekDays = [
   { label: "FRI", value: 5 },
   { label: "SAT", value: 6 },
 ];
-// ... imports remain unchanged
 
 export const AddTaskDialog = ({
   open,
@@ -55,16 +57,15 @@ export const AddTaskDialog = ({
   mode = "add",
   task = null,
 }) => {
-  const { RangePicker } = DatePicker;
   const { toast } = useToast();
 
   const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [startTime, setStartTime] = useState(null);
+  const [endTime, setEndTime] = useState(null);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
   const [icon, setIcon] = useState("");
   const [repeatType, setRepeatType] = useState("daily");
   const [repeatDays, setRepeatDays] = useState([]);
@@ -72,10 +73,10 @@ export const AddTaskDialog = ({
   const resetForm = () => {
     setTitle("");
     setDescription("");
-    setStartTime("");
-    setEndTime("");
-    setStartDate("");
-    setEndDate("");
+    setStartTime(null);
+    setEndTime(null);
+    setStartDate(null);
+    setEndDate(null);
     setIcon("");
     setRepeatType("daily");
     setRepeatDays([]);
@@ -96,16 +97,14 @@ export const AddTaskDialog = ({
       userId,
       title,
       description,
-      startTime,
-      endTime,
-      fromDate: startDate,
-      toDate: endDate,
+      startTime: startTime?.toLocaleTimeString(),
+      endTime: endTime?.toLocaleTimeString(),
+      fromDate: startDate?.toISOString().split("T")[0],
+      toDate: endDate?.toISOString().split("T")[0],
       iconName: icon,
       repeatCycleType: repeatType,
       customRepeatDays: repeatDays,
     };
-
-    console.log("[📦] New Task Payload:", newTask);
 
     try {
       setLoading(true);
@@ -167,23 +166,31 @@ export const AddTaskDialog = ({
         </div>
 
         {/* Time Picker */}
-        <Label className="text-sm font-medium">Time</Label>
-        <TimePicker.RangePicker
-          use12Hours
-          format="h:mm a"
-          size="large"
-          style={{
-            width: "100%",
-            backgroundColor: "#2f2e33",
-            color: "white",
-            border: "none",
-          }}
-          onChange={(time, timeString) => {
-            setStartTime(timeString[0]);
-            setEndTime(timeString[1]);
-          }}
-          prefix={<SmileOutlined color="white" />}
-        />
+        <Label className="label">Time</Label>
+        <div className="time-range-container">
+          <DatePicker
+            selected={startTime}
+            onChange={(date) => setStartTime(date)}
+            showTimeSelect
+            showTimeSelectOnly
+            timeIntervals={15}
+            timeCaption="Start"
+            dateFormat="h:mm aa"
+            placeholderText="Start Time"
+            className="custom-input"
+          />
+          <DatePicker
+            selected={endTime}
+            onChange={(date) => setEndTime(date)}
+            showTimeSelect
+            showTimeSelectOnly
+            timeIntervals={15}
+            timeCaption="End"
+            dateFormat="h:mm aa"
+            placeholderText="End Time"
+            className="custom-input"
+          />
+        </div>
 
         {/* Repeat Dropdown */}
         <div className="space-y-2">
@@ -237,20 +244,28 @@ export const AddTaskDialog = ({
         )}
 
         {/* Date Range Picker */}
-        <Label className="text-sm font-medium">Date Range</Label>
-        <RangePicker
-          size="large"
-          onChange={(date, dateString) => {
-            setStartDate(dateString[0]);
-            setEndDate(dateString[1]);
-          }}
-          style={{
-            width: "100%",
-            backgroundColor: "#2f2e33",
-            color: "white",
-            border: "none",
-          }}
-        />
+        <Label className="label">Date Range</Label>
+        <div className="date-range-container">
+          <DatePicker
+            selected={startDate}
+            onChange={(date) => setStartDate(date)}
+            selectsStart
+            startDate={startDate}
+            endDate={endDate}
+            placeholderText="Start Date"
+            className="custom-input"
+          />
+          <DatePicker
+            selected={endDate}
+            onChange={(date) => setEndDate(date)}
+            selectsEnd
+            startDate={startDate}
+            endDate={endDate}
+            minDate={startDate}
+            placeholderText="End Date"
+            className="custom-input"
+          />
+        </div>
 
         {/* Icon Selection */}
         <div className="space-y-3">
@@ -277,9 +292,7 @@ export const AddTaskDialog = ({
         </div>
 
         {/* Action Buttons */}
-        <div
-          style={{ gap: "20px", display: "flex", justifyContent: "flex-end" }}
-        >
+        <div className="flex justify-end gap-4 pt-4">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Close
           </Button>

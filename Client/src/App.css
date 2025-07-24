@@ -27,6 +27,43 @@
 }
 
 
+
+.label {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  display: inline-block;
+  color: #333;
+}
+
+.time-range-container,
+.date-range-container {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  background-color: #007bff;
+}
+
+.custom-input {
+  
+  flex: 1;
+  padding: 10px 12px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+  color: #333;
+  outline: none;
+  transition: border-color 0.2s ease-in-out;
+}
+
+.custom-input:focus {
+  border-color: #007bff;
+  background-color: #fff;
+}
+
+
+
 @keyframes logo-spin {
   from {
     transform: rotate(0deg);
