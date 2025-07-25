@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using TaskManager.Models;
 using TaskManager.Models.Response;
 using TaskManager.Repositories.Interfaces;
+using TaskManager.Services.Interfaces;
 
 namespace TaskManager.Services;
 
@@ -69,7 +70,8 @@ public class AuthService : IAuthService
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+        var jwtKey = _configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT key not configured");
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(

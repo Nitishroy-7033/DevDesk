@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TaskManager.Models;
-using TaskManager.Repositories.Interfaces;
+using TaskManager.Services.Interfaces;
 
 namespace TaskManager.Controllers
 {

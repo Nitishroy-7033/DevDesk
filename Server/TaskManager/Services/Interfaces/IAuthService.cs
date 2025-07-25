@@ -1,7 +1,7 @@
 using System;
 using TaskManager.Models.Response;
 
-namespace TaskManager.Repositories.Interfaces;
+namespace TaskManager.Services.Interfaces;
 
 public interface IAuthService
 {

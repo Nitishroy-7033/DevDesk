@@ -1,0 +1,156 @@
+### Test API Endpoints for Advanced Task Management
+
+### 1. Register a new user
+POST http://localhost:5175/api/User/register
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "phone": "1234567890",
+  "passowrd": "password123"
+}
+
+### 2. Login to get JWT token
+POST http://localhost:5175/api/auth/login
+Content-Type: application/json
+
+{
+  "phone": "1234567890",
+  "password": "password123"
+}
+
+### 3. Create a new task with time-based scheduling
+POST http://localhost:5175/api/Task/create
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "Morning Exercise",
+  "description": "Daily morning workout routine",
+  "fromDate": "2025-01-26",
+  "toDate": "2025-02-26",
+  "fromTime": "06:00",
+  "toTime": "07:00",
+  "repeatCycleType": "daily",
+  "customRepeatDays": [],
+  "priority": "high",
+  "category": "Health",
+  "expectedDurationMinutes": 60,
+  "reminderMinutesBefore": 15
+}
+
+### 4. Create a weekly task
+POST http://localhost:5175/api/Task/create
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "Team Meeting",
+  "description": "Weekly team standup meeting",
+  "fromDate": "2025-01-27",
+  "toDate": "2025-03-31",
+  "fromTime": "09:00",
+  "toTime": "10:00",
+  "repeatCycleType": "weekly",
+  "customRepeatDays": ["Monday"],
+  "priority": "medium",
+  "category": "Work",
+  "expectedDurationMinutes": 60,
+  "reminderMinutesBefore": 10
+}
+
+### 5. Create a custom repeat task
+POST http://localhost:5175/api/Task/create
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "Grocery Shopping",
+  "description": "Weekly grocery shopping",
+  "fromDate": "2025-01-25",
+  "toDate": "2025-12-31",
+  "fromTime": "18:00",
+  "toTime": "19:30",
+  "repeatCycleType": "custom",
+  "customRepeatDays": ["Saturday", "Sunday"],
+  "priority": "low",
+  "category": "Personal",
+  "expectedDurationMinutes": 90,
+  "reminderMinutesBefore": 30
+}
+
+### 6. Get tasks for today
+GET http://localhost:5175/api/Task/day/2025-01-26
+Authorization: Bearer {{token}}
+
+### 7. Start a task execution
+POST http://localhost:5175/api/Task/start
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "taskId": "{{taskId}}",
+  "scheduledStartTime": "2025-01-26T06:00:00",
+  "notes": "Starting morning exercise routine"
+}
+
+### 8. Complete a task execution
+POST http://localhost:5175/api/Task/complete
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "executionId": "{{executionId}}",
+  "notes": "Completed workout successfully"
+}
+
+### 9. Get user performance data
+GET http://localhost:5175/api/Task/performance/user?fromDate=2025-01-01&toDate=2025-01-31
+Authorization: Bearer {{token}}
+
+### 10. Get top performers leaderboard
+GET http://localhost:5175/api/Task/performance/top?fromDate=2025-01-01&toDate=2025-01-31&limit=10
+Authorization: Bearer {{token}}
+
+### 11. Get user activity details
+GET http://localhost:5175/api/Task/activity/user?fromDate=2025-01-01&toDate=2025-01-31
+Authorization: Bearer {{token}}
+
+### 12. Get daily goal leaderboard
+GET http://localhost:5175/api/Task/leaderboard/daily/2025-01-26?limit=10
+Authorization: Bearer {{token}}
+
+### 13. Get task execution history
+GET http://localhost:5175/api/Task/execution/history?fromDate=2025-01-01&toDate=2025-01-31
+Authorization: Bearer {{token}}
+
+### 14. Get all tasks for a date range
+GET http://localhost:5175/api/Task/range?fromDate=2025-01-20&toDate=2025-01-30
+Authorization: Bearer {{token}}
+
+### 15. Update task execution with additional details
+PUT http://localhost:5175/api/Task/execution/update
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "executionId": "{{executionId}}",
+  "status": "InProgress",
+  "notes": "Updated execution with progress notes",
+  "interruptionCount": 2
+}
+
+### 16. Get all users (admin only)
+GET http://localhost:5175/api/User/all
+Authorization: Bearer {{token}}
+
+### 17. Skip a task execution
+POST http://localhost:5175/api/Task/skip
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "taskId": "{{taskId}}",
+  "scheduledDate": "2025-01-26",
+  "reason": "Not feeling well today"
+}
