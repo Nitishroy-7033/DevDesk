@@ -294,6 +294,7 @@ const formatTime = (timeStr) => {
           <div className="flex flex-col gap-4">
             {tasks.map((task) => (
               <div
+                onClick={()=>handleSetActiveTask(task)}
                 key={task.id}
                 className="  shadow-md rounded-xl p-4 border border-gray-200 dark:border-gray-700 flex items-center gap-4"
               >
@@ -317,6 +318,7 @@ const formatTime = (timeStr) => {
                       justifyContent: "center",
                       justifyItems: "center",
                       borderRadius: "15px",
+                      
                     }}
                   >
                     {task.iconName}
@@ -328,11 +330,20 @@ const formatTime = (timeStr) => {
                   >
                     <div
                       style={{
+                        display:"flex",
+                        justifyContent: "space-between",
+                        marginBottom: "10px", 
                         fontSize: "20px",
                       }}
                     >
                       {task.title}
+
+                       <div>{activeTask?.id === task.id && (
+                         <span className="blinking-dot"></span>
+
+                        )}</div>
                     </div>
+                    
                     <Row justify={"space-between"} align={"middle"}>
                       <div>{task.description}</div>
                       <div
@@ -342,6 +353,9 @@ const formatTime = (timeStr) => {
                           alignItems: "center",
                         }}
                       >
+
+                       
+                        
                         <span
                           style={{
                             backgroundColor: "#2d3748",
@@ -364,25 +378,15 @@ const formatTime = (timeStr) => {
                         >
                          { formatTimeUtil(calculateTaskDuration(task.startTime, task.endTime))}
                         </span>
-                        {activeTask?.id === task.id && (
-                          <span
-                            style={{
-                              backgroundColor: "#51cf66",
-                              padding: "2px 8px",
-                              borderRadius: "8px",
-                              fontSize: "12px",
-                              color: "white",
-                            }}
-                          >
-                            ACTIVE
-                          </span>
-                        )}
+                        
                       </div>
                     </Row>
                   </Col>
 
                   {/* Set Active Task Button */}
-                  <div
+
+
+                  {/* <div
                     onClick={() => handleSetActiveTask(task)}
                     style={{
                       padding: "10px",
@@ -401,49 +405,9 @@ const formatTime = (timeStr) => {
                         : "Set as Active Task"
                     }
                   >
-                    <PlayCircle size={20} color="white" />
-                  </div>
-
-                  {/* Action buttons */}
-                  {/* <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleLogHours(task)}
-                      style={{ padding: "8px", minWidth: "auto" }}
-                    >
-                      <Timer size={16} />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleCompleteTask(task)}
-                      style={{ padding: "8px", minWidth: "auto" }}
-                    >
-                      <CheckCircle size={16} />
-                    </Button>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          style={{ padding: "8px", minWidth: "auto" }}
-                        >
-                          <MoreVertical size={16} />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleLogHours(task)}>
-                          <Timer className="mr-2" size={16} />
-                          Log Hours
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleCompleteTask(task)}>
-                          <CheckCircle className="mr-2" size={16} />
-                          Complete Task
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <PlayCircle size={10} color="white" />
                   </div> */}
+
                 </Row>
               </div>
             ))}

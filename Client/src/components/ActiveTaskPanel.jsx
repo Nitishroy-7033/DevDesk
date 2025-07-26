@@ -149,10 +149,11 @@ export const ActiveTaskPanel = ({
 
   return (
     <Card
+
       className={isFullscreen ? "fullscreen-card" : "normal-card"}
       style={{
         padding: "20px",
-        height: isFullscreen ? "100vh" : "none",
+        // overflowy:"hidden"
       }}
     >
       <Row justify={"space-between"} align={"middle"}>
@@ -208,15 +209,13 @@ export const ActiveTaskPanel = ({
       <br />
       <Col
         style={{
-          height: "90%",
-          // backgroundColor: "red",
           alignContent: "center",
         }}
       >
         <Row
           justify={"center"}
           style={{
-            fontSize: isFullscreen ? "20rem" : "8rem",
+            fontSize: isFullscreen ? "15rem" : "8rem",
             fontWeight: "bolder",
           }}
         >
@@ -244,7 +243,6 @@ export const ActiveTaskPanel = ({
           </Row>
         </Row>
         <br />
-        <br />
         <Row justify={"center"}>
           <Row
             justify={"center"}
@@ -261,7 +259,7 @@ export const ActiveTaskPanel = ({
             {activeTask.iconName} # {activeTask.title}
           </Row>
         </Row>
-        <br />
+        {/* <br />
         <Row justify={"center"}>
           <div
             style={{
@@ -272,7 +270,7 @@ export const ActiveTaskPanel = ({
           >
             {activeTask.description}
           </div>
-        </Row>
+        </Row> */}
         <br />
         <Row justify={"center"} style={{ gap: "15px" }}>
           <div
