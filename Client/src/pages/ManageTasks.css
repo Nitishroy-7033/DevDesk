@@ -168,6 +168,8 @@
   gap: 1.5rem;
 }
 
+
+
 @media (min-width: 1024px) {
   .calendar-view {
     grid-template-columns: 1fr 2fr;

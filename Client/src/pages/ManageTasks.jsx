@@ -222,39 +222,77 @@ export const ManageTasks = () => {
                   <CardTitle>
                     Tasks for {selectedDate?.toLocaleDateString()}
                   </CardTitle>
-                  
                 </CardHeader>
-                <CardContent className="tasks-calendar-content">
-                  <div>Upcoming Tasks</div>
-                  {
-                    calendarTasks.upcomingTasks?.length > 0 ? (
-                      calendarTasks.upcomingTasks.map((task) => (
-                       <div>{task.task.iconName}{task.task.title}</div>
-                      ))
-                    ) : (
-                      <div>No upcoming tasks for this date.</div>
-                    )
-                  }
-                  <div>completedTasks Tasks</div>
-                  {
-                    calendarTasks.completedTasks?.length > 0 ? (
-                      calendarTasks.completedTasks.map((task) => (
-                       <div>{task.task.iconName}{task.task.title}</div>
-                      ))
-                    ) : (
-                      <div>No upcoming tasks for this date.</div>
-                    )
-                  }
-                  <div>inProgressTasks Tasks</div>
-                  {
-                    calendarTasks.inProgressTasks?.length > 0 ? (
-                      calendarTasks.inProgressTasks.map((task) => (
-                       <div>{task.task.iconName}{task.task.title}</div>
-                      ))
-                    ) : (
-                      <div>No upcoming tasks for this date.</div>
-                    )
-                  }
+                <CardContent className="tasks-calendar-content space-y-4">
+                  <h2 className="text-xl font-semibold text-gray-800">
+                    Upcoming Tasks
+                  </h2>
+
+                  {calendarTasks.upcomingTasks?.length > 0 ? (
+                    calendarTasks.upcomingTasks.map((task, index) => (
+                      <div
+                        key={index}
+                        className="bg dark:bg-gray-800 shadow-md rounded-xl p-4 border border-gray-200 dark:border-gray-700"
+                      >
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="text-2xl">{task.task.iconName}</span>
+                          <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                            {task.task.title}
+                          </h3>
+                        </div>
+
+                        {task.task.description && (
+                          <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                            {task.task.description}
+                          </p>
+                        )}
+
+                        <div className="text-sm text-gray-700 dark:text-gray-400 flex flex-col sm:flex-row gap-2">
+                          <span>
+                            <strong>Start:</strong> {task.task.startTime}
+                          </span>
+                          <span>
+                            <strong>End:</strong> {task.task.endTime}
+                          </span>
+                        </div>
+
+                        <div className="text-sm text-gray-700 dark:text-gray-400 mt-2 flex flex-col sm:flex-row gap-2">
+                          {/* Show Repeat if customRepeatDays is not present */}
+                          {!task.task.customRepeatDays?.length && (
+                            <span>
+                              <strong>Repeat:</strong>{" "}
+                              {task.task.repeatCycleType || "None"}
+                            </span>
+                          )}
+
+                          {/* Show customRepeatDays if available */}
+                          {task.task.customRepeatDays?.length > 0 && (
+                            <span>
+                              <strong>Repeat:</strong>{" "}
+                              {task.task.customRepeatDays
+                                .map((day) => {
+                                  const dayMap = {
+                                    1: "Monday",
+                                    2: "Tuesday",
+                                    3: "Wednesday",
+                                    4: "Thursday",
+                                    5: "Friday",
+                                    6: "Saturday",
+                                    7: "Sunday",
+                                  };
+                                  return dayMap[day] || `Day${day}`;
+                                })
+                                .join(", ")}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center text-sm text-gray-500 dark:text-gray-400">
+                      No upcoming tasks for this date.
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
