@@ -30,11 +30,11 @@
   background-color: #fff;
 }
 /* Add this to your index.css or App.css */
-.scroll-hide {
+/* .scroll-hide {
   scrollbar-width: none;        
   -ms-overflow-style: none;      
 }
 
 .scroll-hide::-webkit-scrollbar {
   display: none;                
-}
+} */
