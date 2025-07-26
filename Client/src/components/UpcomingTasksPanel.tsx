@@ -15,12 +15,14 @@ import {
   Timer,
 } from "lucide-react";
 import { Checkbox, Col, Input, Row } from "antd";
+import { FaFilter } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format, addDays, subDays, isToday } from "date-fns";
 import { AddTaskDialog } from "../components/AddTaskDialog.jsx";
 import LogHoursDialog from "../components/LogHoursDialog.jsx";
 import CompleteTaskDialog from "../components/CompleteTaskDialog.jsx";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,6 +36,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+
 } from "@/components/ui/select";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Avatar, AvatarFallback } from "@radix-ui/react-avatar";
@@ -119,7 +122,8 @@ export const UpcomingTasksPanel = () => {
             </p>
             
             {/* Status Filter */}
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              
+               <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-32">
                 <SelectValue />
               </SelectTrigger>
@@ -131,6 +135,11 @@ export const UpcomingTasksPanel = () => {
                 <SelectItem value="Skipped">Skipped</SelectItem>
               </SelectContent>
             </Select>
+
+     
+
+
+
           </div>
           <div
             style={{
@@ -305,7 +314,7 @@ export const UpcomingTasksPanel = () => {
                   </Col>
                   
                   {/* Action buttons */}
-                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                  {/* <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                     <Button
                       size="sm"
                       variant="outline"
@@ -343,7 +352,7 @@ export const UpcomingTasksPanel = () => {
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                  </div>
+                  </div> */}
                 </Row>
               </Row>
             ))}

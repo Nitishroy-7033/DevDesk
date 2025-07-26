@@ -145,14 +145,14 @@ export const Login = () => {
         <div className="login-back-link">
           <Link to="/" className="back-link">
             <ArrowLeft className="icon" />
-            Back to Study Planner
+            Back to HomePage
           </Link>
         </div>
 
         <Card>
           <CardHeader className="login-header">
             <div className="logo-circle">
-              <span className="logo-text">SP</span>
+              <span className="logo-text">HP</span>
             </div>
             <CardTitle className="login-title">
               {isSignUp ? "Create Account" : "Welcome Back"}
