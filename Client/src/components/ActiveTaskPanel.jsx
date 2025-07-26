@@ -1,12 +1,16 @@
 // ActiveTaskPanel.jsx
 import { useState, useEffect } from "react";
-import './AddTaskDialog.css'
+import "./AddTaskDialog.css";
 import {
   Maximize,
   Play,
+  Pause,
   RefreshCcw,
   Settings,
   SkipForwardIcon,
+  CheckCircle,
+  Save,
+  SaveOff,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -20,48 +24,122 @@ import TaskControls from "./Timer/TaskControls";
 import CompletedCard from "./Timer/CompletedCard";
 import { Col, Progress, Row } from "antd";
 import FlipClockCountdown from "@leenguyen/react-flip-clock-countdown";
+import { useActiveTask } from "@/contexts/ActiveTaskContext";
+import { formatTime as formatTimeUtil } from "@/utils/timeUtils";
 
 export const ActiveTaskPanel = ({
   isFullscreen = false,
   onToggleFullscreen,
 }) => {
-  const [isRunning, setIsRunning] = useState(false);
-  const [timeRemaining, setTimeRemaining] = useState(7200);
-  const [isCompleted, setIsCompleted] = useState(false);
-  const [countdownStyle, setCountdownStyle] = useState("digital");
+  const {
+    activeTask,
+    isRunning,
+    timeRemaining,
+    totalTime,
+    isCompleted,
+    autoSaveEnabled,
+    startTimer,
+    pauseTimer,
+    completeTask,
+    resetTaskWithConfirmation,
+    moveToNextTask,
+    hasNextTask,
+    toggleAutoSave,
+    progress,
+  } = useActiveTask();
 
-  const totalTime = 7200;
-  const progress = ((totalTime - timeRemaining) / totalTime) * 100;
+  const handleStart = () => startTimer();
+  const handlePause = () => pauseTimer();
+  const handleComplete = () => completeTask();
+  const handleReset = () => resetTaskWithConfirmation();
+  const handleNextTask = () => moveToNextTask();
 
-  useEffect(() => {
-    let interval;
-    if (isRunning && timeRemaining > 0) {
-      interval = setInterval(() => {
-        setTimeRemaining((prev) => {
-          if (prev <= 1) {
-            setIsRunning(false);
-            setIsCompleted(true);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isRunning, timeRemaining]);
+  // If task is completed, show completed card
+  if (isCompleted) {
+    return (
+      <CompletedCard
+        onReset={handleReset}
+        onNextTask={handleNextTask}
+        taskTitle={activeTask?.title}
+        hasNextTask={hasNextTask}
+      />
+    );
+  }
 
-  const handleStart = () => setIsRunning(true);
-  const handlePause = () => setIsRunning(false);
-  const handleComplete = () => {
-    setIsRunning(false);
-    setIsCompleted(true);
-  };
-  const handleReset = () => {
-    setIsCompleted(false);
-    setTimeRemaining(totalTime);
-  };
-
-  if (isCompleted) return <CompletedCard onReset={handleReset} />;
+  // If no active task, show placeholder
+  if (!activeTask) {
+    return (
+      <Card
+        className={isFullscreen ? "fullscreen-card" : "normal-card"}
+        style={{
+          padding: "20px",
+          height: isFullscreen ? "100vh" : "none",
+        }}
+      >
+        <Row justify={"space-between"} align={"middle"}>
+          <CardTitle className={`header-title ${isFullscreen ? "large" : ""}`}>
+            Active Task
+          </CardTitle>
+          <div className="header-actions">
+            <div
+              onClick={toggleAutoSave}
+              style={{
+                cursor: "pointer",
+                padding: "10px",
+                backgroundColor: autoSaveEnabled ? "#065f46" : "#7f1d1d",
+                border: `1px solid ${autoSaveEnabled ? "#10b981" : "#ef4444"}`,
+                borderRadius: "10px",
+                marginRight: "10px",
+              }}
+              title={
+                autoSaveEnabled
+                  ? "Auto-save is ON - Click to disable"
+                  : "Auto-save is OFF - Click to enable"
+              }
+            >
+              {autoSaveEnabled ? (
+                <Save size={20} color="#10b981" />
+              ) : (
+                <SaveOff size={20} color="#ef4444" />
+              )}
+            </div>
+            {onToggleFullscreen && (
+              <div
+                onClick={onToggleFullscreen}
+                style={{
+                  cursor: "pointer",
+                  padding: "10px",
+                  backgroundColor: "#323639",
+                  border: "1px solid #444444",
+                  borderRadius: "10px",
+                }}
+              >
+                <Maximize size={20} />
+              </div>
+            )}
+          </div>
+        </Row>
+        <br />
+        <Col
+          style={{
+            height: "90%",
+            alignContent: "center",
+            justifyContent: "center",
+            display: "flex",
+            flexDirection: "column",
+            textAlign: "center",
+          }}
+        >
+          <div style={{ fontSize: "18px", color: "#666" }}>
+            No active task selected
+          </div>
+          <div style={{ fontSize: "14px", color: "#999", marginTop: "10px" }}>
+            Select a task from the upcoming tasks to get started
+          </div>
+        </Col>
+      </Card>
+    );
+  }
 
   return (
     <Card
@@ -75,7 +153,36 @@ export const ActiveTaskPanel = ({
         <CardTitle className={`header-title ${isFullscreen ? "large" : ""}`}>
           Active Task
         </CardTitle>
-        <div className="header-actions">
+        <div
+          className="header-actions"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+          }}
+        >
+          <div
+            onClick={toggleAutoSave}
+            style={{
+              cursor: "pointer",
+              padding: "10px",
+              backgroundColor: autoSaveEnabled ? "#065f46" : "#7f1d1d",
+              border: `1px solid ${autoSaveEnabled ? "#10b981" : "#ef4444"}`,
+              borderRadius: "10px",
+              marginRight: "10px",
+            }}
+            title={
+              autoSaveEnabled
+                ? "Auto-save is ON - Click to disable"
+                : "Auto-save is OFF - Click to enable"
+            }
+          >
+            {autoSaveEnabled ? (
+              <Save size={20} color="#10b981" />
+            ) : (
+              <SaveOff size={20} color="#ef4444" />
+            )}
+          </div>
           {onToggleFullscreen && (
             <div
               onClick={onToggleFullscreen}
@@ -107,7 +214,7 @@ export const ActiveTaskPanel = ({
             fontWeight: "bolder",
           }}
         >
-          12:30:23
+          {formatTimeUtil(timeRemaining)}
         </Row>
         {/* <FlipClockCountdown
           to={new Date().getTime() + 24 * 3600 * 1000 + 5000}
@@ -126,7 +233,7 @@ export const ActiveTaskPanel = ({
               trailColor="#1e1e1e"
               type="line"
               showInfo={false}
-              percent={75}
+              percent={Math.round(progress)}
             />
           </Row>
         </Row>
@@ -141,10 +248,63 @@ export const ActiveTaskPanel = ({
               padding: "10px 20px",
               border: "1px solid #444444",
               borderRadius: "15px",
+              maxWidth: "80%",
+              textAlign: "center",
             }}
           >
-            🥇 #3 - Learn how to implement open ai in flutter
+            {activeTask.iconName} # {activeTask.title}
           </Row>
+        </Row>
+        <br />
+        <Row justify={"center"}>
+          <div
+            style={{
+              fontSize: "14px",
+              color: "#a0a0a0",
+              textAlign: "center",
+            }}
+          >
+            {activeTask.description}
+          </div>
+        </Row>
+        <br />
+        <Row justify={"center"} style={{ gap: "15px" }}>
+          <div
+            style={{
+              backgroundColor: "#2d3748",
+              padding: "8px 15px",
+              borderRadius: "10px",
+              fontSize: "14px",
+              color: "#cbd5e0",
+            }}
+          >
+            📅 {activeTask.startTime} - {activeTask.endTime}
+          </div>
+          <div
+            style={{
+              backgroundColor: "#4a5568",
+              padding: "8px 15px",
+              borderRadius: "10px",
+              fontSize: "14px",
+              color: "#cbd5e0",
+            }}
+          >
+            ⏱️ {formatTimeUtil(totalTime)} total
+          </div>
+          {autoSaveEnabled && (
+            <div
+              style={{
+                backgroundColor: "#065f46",
+                padding: "8px 15px",
+                borderRadius: "10px",
+                fontSize: "12px",
+                color: "#10b981",
+                border: "1px solid #10b981",
+              }}
+            >
+              💾 Auto-saved
+            </div>
+          )}
         </Row>
         <br />
         <br />
@@ -156,38 +316,45 @@ export const ActiveTaskPanel = ({
           }}
         >
           <div
+            onClick={handleReset}
             style={{
               padding: "15px",
               backgroundColor: "#323639",
               border: "1px solid #444444",
               borderRadius: "15px",
+              cursor: "pointer",
             }}
           >
             <RefreshCcw />
           </div>
           <div
+            onClick={isRunning ? handlePause : handleStart}
             style={{
               padding: "15px",
-              backgroundColor: "#323639",
+              backgroundColor: isRunning ? "#ff6b6b" : "#51cf66",
               border: "1px solid #444444",
               borderRadius: "15px",
               display: "flex",
               gap: "10px",
               fontSize: "15px",
               fontWeight: "bold",
+              cursor: "pointer",
             }}
           >
-            <Play /> START
+            {isRunning ? <Pause /> : <Play />}
+            {isRunning ? "PAUSE" : "START"}
           </div>
           <div
+            onClick={handleComplete}
             style={{
               padding: "15px",
-              backgroundColor: "#323639",
+              backgroundColor: "#4dabf7",
               border: "1px solid #444444",
               borderRadius: "15px",
+              cursor: "pointer",
             }}
           >
-            <SkipForwardIcon />
+            <CheckCircle />
           </div>
         </Row>
       </Col>

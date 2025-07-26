@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { TodoProvider } from "@/contexts/TodoContext";
+import { ActiveTaskProvider } from "@/contexts/ActiveTaskContext";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import ManageTasks from "./pages/ManageTasks";
@@ -19,20 +20,22 @@ const App = () => (
     <ThemeProvider>
       <AuthProvider>
         <TodoProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/manage-tasks" element={<ManageTasks />} />
-                <Route path="/progress" element={<Progress />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
+          <ActiveTaskProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/manage-tasks" element={<ManageTasks />} />
+                  <Route path="/progress" element={<Progress />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </TooltipProvider>
+          </ActiveTaskProvider>
         </TodoProvider>
       </AuthProvider>
     </ThemeProvider>

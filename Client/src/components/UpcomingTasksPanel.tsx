@@ -13,9 +13,9 @@ import {
   MoreVertical,
   CheckCircle,
   Timer,
+  PlayCircle,
 } from "lucide-react";
 import { Checkbox, Col, Input, Row } from "antd";
-import { FaFilter } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format, addDays, subDays, isToday } from "date-fns";
@@ -36,7 +36,6 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-
 } from "@/components/ui/select";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Avatar, AvatarFallback } from "@radix-ui/react-avatar";
@@ -46,6 +45,8 @@ import NoTaskMessage from "../components/NoTaskMessage.jsx";
 import "./UpcomingTasksPanel.css";
 import { useTodo } from "@/contexts/TodoContext";
 import { useTaskManager } from "@/hooks/useTaskManager";
+import { useActiveTask } from "@/contexts/ActiveTaskContext";
+import { calculateTaskDuration, formatTime } from "@/utils/timeUtils";
 interface Task {
   id: string;
   title: string;
@@ -58,6 +59,11 @@ interface Task {
 export const UpcomingTasksPanel = () => {
   const { tasks, loading, error } = useTodo();
   const { fetchTasks } = useTaskManager();
+  const {
+    setActiveTaskFromUpcoming,
+    setAvailableTasksAndAutoSelect,
+    activeTask,
+  } = useActiveTask();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const { isLoggedIn, logout } = useAuth();
   const [searchText, setSearchText] = useState("");
@@ -85,6 +91,10 @@ export const UpcomingTasksPanel = () => {
     setIsCompleteTaskOpen(true);
   };
 
+  const handleSetActiveTask = (task) => {
+    setActiveTaskFromUpcoming(task);
+  };
+
   const handleTaskCompleted = (completedTask) => {
     // Refresh the tasks list after completion
     getUpcomingTask();
@@ -102,6 +112,13 @@ export const UpcomingTasksPanel = () => {
   useEffect(() => {
     getUpcomingTask();
   }, [statusFilter]);
+
+  // Auto-set first task as active when tasks are loaded and no active task exists
+  useEffect(() => {
+    if (tasks.length > 0 && isLoggedIn) {
+      setAvailableTasksAndAutoSelect(tasks);
+    }
+  }, [tasks, setAvailableTasksAndAutoSelect, isLoggedIn]);
   return (
     <Card className="card-container">
       <CardHeader className="flex justify-between ">
@@ -122,10 +139,10 @@ export const UpcomingTasksPanel = () => {
               Tasks List{" "}
               <span style={{ color: "grey" }}>({tasks.length} tasks)</span>
             </p>
-            
+
             {/* Status Filter */}
-              
-               {/* <Select value={statusFilter} onValueChange={setStatusFilter}>
+
+            {/* <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-32">
                 <SelectValue />
               </SelectTrigger>
@@ -137,11 +154,6 @@ export const UpcomingTasksPanel = () => {
                 <SelectItem value="Skipped">Skipped</SelectItem>
               </SelectContent>
             </Select> */}
-
-     
-
-
-
           </div>
           <div
             style={{
@@ -180,23 +192,23 @@ export const UpcomingTasksPanel = () => {
             >
               <Search color="grey" />
             </div>
-           <div>
-            {
-              isLoggedIn ? (
-                 <div
-              onClick={() => setIsAddTaskOpen(true)}
-              style={{
-                padding: "10px",
-                backgroundColor: "#3b7be3",
-                borderRadius: "15px",
-                cursor: "pointer",
-              }}
-            >
-              <Plus color="white" />
+            <div>
+              {isLoggedIn ? (
+                <div
+                  onClick={() => setIsAddTaskOpen(true)}
+                  style={{
+                    padding: "10px",
+                    backgroundColor: "#3b7be3",
+                    borderRadius: "15px",
+                    cursor: "pointer",
+                  }}
+                >
+                  <Plus color="white" />
+                </div>
+              ) : (
+                ""
+              )}
             </div>
-              ) : ""
-            }
-           </div>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -314,14 +326,79 @@ export const UpcomingTasksPanel = () => {
                     >
                       {task.title}
                     </div>
-                    <Row justify={"space-between"}>
+                    <Row justify={"space-between"} align={"middle"}>
                       <div>{task.description}</div>
-                      <div>
-                        {task.startTime} - {task.endTime}
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "10px",
+                          alignItems: "center",
+                        }}
+                      >
+                        <span
+                          style={{
+                            backgroundColor: "#2d3748",
+                            padding: "2px 8px",
+                            borderRadius: "8px",
+                            fontSize: "12px",
+                            color: "#a0a0a0",
+                          }}
+                        >
+                          {task.startTime} - {task.endTime}
+                        </span>
+                        <span
+                          style={{
+                            backgroundColor: "#4a5568",
+                            padding: "2px 8px",
+                            borderRadius: "8px",
+                            fontSize: "12px",
+                            color: "#cbd5e0",
+                          }}
+                        >
+                          {formatTime(
+                            calculateTaskDuration(task.startTime, task.endTime)
+                          )}
+                        </span>
+                        {activeTask?.id === task.id && (
+                          <span
+                            style={{
+                              backgroundColor: "#51cf66",
+                              padding: "2px 8px",
+                              borderRadius: "8px",
+                              fontSize: "12px",
+                              color: "white",
+                            }}
+                          >
+                            ACTIVE
+                          </span>
+                        )}
                       </div>
                     </Row>
                   </Col>
-                  
+
+                  {/* Set Active Task Button */}
+                  <div
+                    onClick={() => handleSetActiveTask(task)}
+                    style={{
+                      padding: "10px",
+                      backgroundColor:
+                        activeTask?.id === task.id ? "#51cf66" : "#4dabf7",
+                      border: "1px solid #444444",
+                      borderRadius: "15px",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    title={
+                      activeTask?.id === task.id
+                        ? "Currently Active"
+                        : "Set as Active Task"
+                    }
+                  >
+                    <PlayCircle size={20} color="white" />
+                  </div>
+
                   {/* Action buttons */}
                   {/* <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                     <Button
@@ -372,21 +449,21 @@ export const UpcomingTasksPanel = () => {
           onOpenChange={setIsAddTaskOpen}
           mode="add"
         />
-        
+
         {selectedTask && (
           <>
             <LogHoursDialog
               isOpen={isLogHoursOpen}
               onClose={() => setIsLogHoursOpen(false)}
               task={selectedTask}
-              executionDate={format(selectedDate, 'yyyy-MM-dd')}
+              executionDate={format(selectedDate, "yyyy-MM-dd")}
             />
-            
+
             <CompleteTaskDialog
               isOpen={isCompleteTaskOpen}
               onClose={() => setIsCompleteTaskOpen(false)}
               task={selectedTask}
-              executionDate={format(selectedDate, 'yyyy-MM-dd')}
+              executionDate={format(selectedDate, "yyyy-MM-dd")}
               onTaskCompleted={handleTaskCompleted}
             />
           </>
