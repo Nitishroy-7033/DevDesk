@@ -83,10 +83,9 @@ export const ManageTasks = () => {
     }
   };
 
-  const formatTime = (timeString) => {
-  if (!timeString) return "";
-  const [hours, minutes] = timeString.split(":");
-  return `${hours}:${minutes}`;
+const formatTime = (timeStr) => {
+  // Remove the :00 seconds using regex
+  return timeStr.replace(/:00\s/, " ");
 };
 
 
@@ -118,7 +117,7 @@ export const ManageTasks = () => {
         </div>
         <div className="task-time-progress">
           <span>
-            {task.startTime} - {task.endTime}
+            {formatTime(task.startTime)} - {formatTime(task.endTime)}
           </span>
           <span>{task.progress}%</span>
         </div>
@@ -239,7 +238,7 @@ export const ManageTasks = () => {
                     calendarTasks.upcomingTasks.map((task, index) => (
                       <div
                         key={index}
-                        className="bg dark:bg-gray-800 shadow-md rounded-xl p-4 border border-gray-200 dark:border-gray-700"
+                        className="bg  shadow-md rounded-xl p-4 border border-gray-200 dark:border-gray-700"
                       >
                         <div className="flex items-center gap-1 py-1">
                           <span className="text-xl">{task.task.iconName}</span>
@@ -256,10 +255,10 @@ export const ManageTasks = () => {
 
                         <div className="text-sm text-gray-700 dark:text-gray-400 flex flex-col sm:flex-row gap-2">
                           <span>
-                            <strong>Start:</strong> {task.task.startTime}
+                            <strong>Start:</strong> {formatTime(task.task.startTime)}
                           </span>
                           <span>
-                            <strong>End:</strong> {task.task.endTime}
+                            <strong>End:</strong> {formatTime(task.task.endTime)}
                           </span>
                         </div>
 

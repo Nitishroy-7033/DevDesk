@@ -54,6 +54,12 @@ export const ActiveTaskPanel = ({
   const handleReset = () => resetTaskWithConfirmation();
   const handleNextTask = () => moveToNextTask();
 
+
+  const formatTime = (timeStr) => {
+  // Remove the :00 seconds using regex
+  return timeStr.replace(/:00\s/, " ");
+};
+
   // If task is completed, show completed card
   if (isCompleted) {
     return (
@@ -278,7 +284,7 @@ export const ActiveTaskPanel = ({
               color: "#cbd5e0",
             }}
           >
-            📅 {activeTask.startTime} - {activeTask.endTime}
+            📅 {formatTime(activeTask.startTime)} - {formatTime(activeTask.endTime)}
           </div>
           <div
             style={{

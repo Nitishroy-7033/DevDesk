@@ -108,6 +108,21 @@ export const UpcomingTasksPanel = () => {
       console.error("Error fetching upcoming tasks:", error);
     }
   };
+    function formatTimeUtil(totalSeconds) {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    // const seconds = totalSeconds % 60;
+
+    // Pad with 0 if needed
+    const paddedHours = String(hours).padStart(2, "0");
+    const paddedMinutes = String(minutes).padStart(2, "0");
+
+    return `${paddedHours}:${paddedMinutes}`;
+  }
+const formatTime = (timeStr) => {
+  // Remove the :00 seconds using regex
+  return timeStr.replace(/:00\s/, " ");
+};
 
   useEffect(() => {
     getUpcomingTask();
@@ -280,7 +295,7 @@ export const UpcomingTasksPanel = () => {
             {tasks.map((task) => (
               <div
                 key={task.id}
-                className="  dark:bg-gray-800 shadow-md rounded-xl p-4 border border-gray-200 dark:border-gray-700 flex items-center gap-4"
+                className="  shadow-md rounded-xl p-4 border border-gray-200 dark:border-gray-700 flex items-center gap-4"
               >
                 <Row style={{ gap: "10px", width: "100%" }} align={"middle"}>
                   <div className="scale-150">
@@ -292,7 +307,7 @@ export const UpcomingTasksPanel = () => {
 
                   <div
                     style={{
-                      backgroundColor: "#4e4e4eff",
+                      
                       fontSize: "30px",
                       height: "60px",
                       width: "60px",
@@ -336,7 +351,7 @@ export const UpcomingTasksPanel = () => {
                             color: "#a0a0a0",
                           }}
                         >
-                          {task.startTime} - {task.endTime}
+                           {formatTime(task.startTime)} - {formatTime(task.endTime)}
                         </span>
                         <span
                           style={{
@@ -347,9 +362,7 @@ export const UpcomingTasksPanel = () => {
                             color: "#cbd5e0",
                           }}
                         >
-                          {formatTime(
-                            calculateTaskDuration(task.startTime, task.endTime)
-                          )}
+                         { formatTimeUtil(calculateTaskDuration(task.startTime, task.endTime))}
                         </span>
                         {activeTask?.id === task.id && (
                           <span
