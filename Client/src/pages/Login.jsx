@@ -8,24 +8,63 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Eye, EyeOff, ArrowLeft, Info } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import axios from "axios";
-import "./Login.css"; // <-- Create and import your custom CSS file
+import { authAPI } from "@/lib/ApiClient";
+import config from "@/config";
+import "./Login.css";
 import { useAuth } from "../contexts/AuthContext";
 
 export const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
-  const [phone, setPhone] = useState();
-  const [password, setPassword] = useState();
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const { login } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const validateForm = () => {
+    const newErrors = {};
+
+    // Phone validation
+    if (!phone.trim()) {
+      newErrors.phone = "Phone number is required";
+    } else if (!config.validation.phoneRegex.test(phone.replace(/\D/g, ""))) {
+      newErrors.phone = "Please enter a valid 10-digit phone number";
+    }
+
+    // Password validation
+    if (!password.trim()) {
+      newErrors.password = "Password is required";
+    } else if (password.length < config.validation.minPasswordLength) {
+      newErrors.password = `Password must be at least ${config.validation.minPasswordLength} characters`;
+    }
+
+    // Name validation for signup
+    if (isSignUp && !name.trim()) {
+      newErrors.name = "Full name is required";
+    }
+
+    // Confirm password validation for signup
+    if (isSignUp && password !== confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -35,7 +74,7 @@ export const Login = () => {
         await handleLogin();
       }
     } catch (error) {
-      console.log(error);
+      console.error("Authentication error:", error);
       toast({
         title: "Error",
         description: "Something went wrong. Please try again.",
@@ -47,46 +86,35 @@ export const Login = () => {
   };
   const handleLogin = async () => {
     try {
-      const response = await axios.post(
-        "http://localhost:5175/Auth/login",
-        {
-          phone: phone,
-          password: password,
-        }
-      );
+      const data = await authAPI.login({
+        phone: phone,
+        password: password,
+      });
 
-      const data = response.data;
-      // Save login
+      // Save login using AuthContext
       login(data);
+
       toast({
         title: "Login successful",
         description: `Welcome back, ${data.userName}`,
       });
 
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("userName", data.userName);
-      localStorage.setItem("userId", data.userId);
-      localStorage.setItem("userPhone", data.userPhone);
-      localStorage.setItem("expireAt", data.expireAt);
-      localStorage.setItem("tokenType", data.tokenType);
-      localStorage.setItem("userRole", data.userRole);
-
       navigate("/");
-    } catch (err) {
-      console.log(err.response.data.message);
+    } catch (error) {
+      console.error("Login error:", error);
       toast({
         title: "Login failed",
-        description: err.response.data.message,
+        description: error.message,
         variant: "destructive",
       });
     }
   };
   const handleSignup = async () => {
     try {
-      await axios.post("http://localhost:5175/User/register", {
-        name: name, // You can also bind this to state
+      await authAPI.register({
+        name: name,
         phone: phone,
-        passowrd: password, // note: spelling matches API ("passowrd")
+        password: password,
       });
 
       toast({
@@ -94,12 +122,18 @@ export const Login = () => {
         description: "You can now sign in with your credentials.",
       });
 
-      setIsSignUp(false); // Switch back to login form
-    } catch (err) {
-      console.log(err);
+      setIsSignUp(false);
+      // Clear form
+      setName("");
+      setPhone("");
+      setPassword("");
+      setConfirmPassword("");
+      setErrors({});
+    } catch (error) {
+      console.error("Signup error:", error);
       toast({
         title: "Signup failed",
-        description: err.response?.data?.message || "Try again later.",
+        description: error.message,
         variant: "destructive",
       });
     }
@@ -139,8 +173,13 @@ export const Login = () => {
                     id="name"
                     placeholder="Enter your full name"
                     className="form-input"
+                    value={name}
                     onChange={(e) => setName(e.target.value)}
+                    required
                   />
+                  {errors.name && (
+                    <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+                  )}
                 </div>
               )}
 
@@ -148,13 +187,16 @@ export const Login = () => {
                 <Label htmlFor="phone">Phone</Label>
                 <Input
                   id="phone"
-                  type="Phone"
+                  type="tel"
                   placeholder="Enter your Phone Number"
                   className="form-input"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   required
                 />
+                {errors.phone && (
+                  <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
+                )}
               </div>
 
               <div className="form-group">
@@ -182,6 +224,9 @@ export const Login = () => {
                     )}
                   </Button>
                 </div>
+                {errors.password && (
+                  <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+                )}
               </div>
 
               {isSignUp && (
@@ -192,13 +237,23 @@ export const Login = () => {
                     type="password"
                     placeholder="Confirm your password"
                     className="form-input"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
                   />
+                  {errors.confirmPassword && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.confirmPassword}
+                    </p>
+                  )}
                 </div>
               )}
 
               <Button type="submit" className="submit-btn" disabled={isLoading}>
                 {isLoading
-                  ? "Signing In..."
+                  ? isSignUp
+                    ? "Creating Account..."
+                    : "Signing In..."
                   : isSignUp
                   ? "Create Account"
                   : "Sign In"}
@@ -219,7 +274,14 @@ export const Login = () => {
               <Button
                 variant="link"
                 className="switch-link"
-                onClick={() => setIsSignUp(!isSignUp)}
+                onClick={() => {
+                  setIsSignUp(!isSignUp);
+                  setErrors({});
+                  setPhone("");
+                  setPassword("");
+                  setName("");
+                  setConfirmPassword("");
+                }}
               >
                 {isSignUp ? "Sign in" : "Sign up"}
               </Button>

@@ -6,7 +6,7 @@ using TaskManager.Services.Interfaces;
 
 namespace TaskManager.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     [Authorize]
     public class TaskController : BaseController
@@ -120,13 +120,53 @@ namespace TaskManager.Controllers
             }
         }
 
+        [HttpGet("upcoming-task")]
+        public async Task<IActionResult> GetUpcomingTasks([FromQuery] string? date = null)
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                
+                // Parse date parameter (expecting YYYY-MM-DD format)
+                DateTime targetDate = DateTime.Today;
+                if (!string.IsNullOrEmpty(date))
+                {
+                    if (!DateTime.TryParse(date, out targetDate))
+                    {
+                        return BadRequest(new { message = "Invalid date format. Use YYYY-MM-DD." });
+                    }
+                }
+
+                var tasks = await _taskService.GetUpcomingTasksAsync(userId, targetDate);
+                return Ok(tasks);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
         [HttpGet("upcoming")]
-        public async Task<IActionResult> GetUpcomingTasks([FromQuery] DateTime? date = null)
+        public async Task<IActionResult> GetUpcomingTasks([FromQuery] DateTime? date = null, [FromQuery] string? status = null)
         {
             try
             {
                 var userId = GetCurrentUserId();
                 var targetDate = date ?? DateTime.Today;
+                
+                // If status filter is provided, use the filtered method
+                if (!string.IsNullOrEmpty(status) && status != "All")
+                {
+                    var query = new TaskQueryRequest 
+                    { 
+                        Date = targetDate,
+                        Status = status,
+                        OnlyActiveTasks = true
+                    };
+                    var filteredTasks = await _taskService.GetAllTask(userId, query);
+                    return Ok(filteredTasks);
+                }
+                
                 var tasks = await _taskService.GetUpcomingTasksAsync(userId, targetDate);
                 return Ok(tasks);
             }
@@ -211,6 +251,76 @@ namespace TaskManager.Controllers
                 var userId = GetCurrentUserId();
                 var execution = await _taskService.UpdateTaskExecutionAsync(userId, request);
                 return Ok(execution);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("execute")]
+        public async Task<IActionResult> ExecuteTask([FromBody] TaskExecutionRequest request)
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                var execution = await _taskService.UpdateTaskExecutionAsync(userId, request);
+                return Ok(new { message = "Task execution updated successfully", execution });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("log-hours")]
+        public async Task<IActionResult> LogHours([FromBody] LogHoursRequest request)
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                
+                // If task-specific, log to task execution
+                if (!string.IsNullOrEmpty(request.TaskId))
+                {
+                    var executionRequest = new TaskExecutionRequest
+                    {
+                        TaskId = request.TaskId,
+                        ExecutionDate = request.Date ?? DateTime.Today,
+                        Action = "log-hours",
+                        ActualDurationMinutes = (int)(request.Hours * 60),
+                        Notes = request.Notes
+                    };
+                    
+                    await _taskService.UpdateTaskExecutionAsync(userId, executionRequest);
+                }
+                
+                return Ok(new { message = "Hours logged successfully", hours = request.Hours });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("history/{userId}")]
+        public async Task<IActionResult> GetTaskHistory(string userId, [FromQuery] DateTime? fromDate = null, [FromQuery] DateTime? toDate = null)
+        {
+            try
+            {
+                var currentUserId = GetCurrentUserId();
+                
+                // Only allow users to access their own history
+                if (userId != currentUserId)
+                {
+                    return Forbid();
+                }
+                
+                var from = fromDate ?? DateTime.Today.AddDays(-30);
+                var to = toDate ?? DateTime.Today;
+                
+                var history = await _taskService.GetExecutionHistoryAsync(userId, from, to);
+                return Ok(history);
             }
             catch (Exception ex)
             {

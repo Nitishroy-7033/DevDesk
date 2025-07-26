@@ -26,7 +26,7 @@ public class UserService : IUserService
         {
             Name = newUser.Name,
             Phone = newUser.Phone,
-            PasswordHash = HashPassword(newUser.Passowrd),
+            PasswordHash = HashPassword(newUser.Password),
             CreatedAt = DateTime.Now,
         };
 

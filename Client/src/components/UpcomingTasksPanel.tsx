@@ -10,12 +10,17 @@ import {
   LogIn,
   Search,
   Plus,
+  MoreVertical,
+  CheckCircle,
+  Timer,
 } from "lucide-react";
 import { Checkbox, Col, Input, Row } from "antd";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format, addDays, subDays, isToday } from "date-fns";
 import { AddTaskDialog } from "../components/AddTaskDialog.jsx";
+import LogHoursDialog from "../components/LogHoursDialog.jsx";
+import CompleteTaskDialog from "../components/CompleteTaskDialog.jsx";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,6 +28,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Avatar, AvatarFallback } from "@radix-ui/react-avatar";
 import { useNavigate } from "react-router-dom";
@@ -30,7 +42,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import NoTaskMessage from "../components/NoTaskMessage.jsx";
 import "./UpcomingTasksPanel.css";
 import { useTodo } from "@/contexts/TodoContext";
-import axios from "axios";
+import { useTaskManager } from "@/hooks/useTaskManager";
 interface Task {
   id: string;
   title: string;
@@ -41,33 +53,50 @@ interface Task {
 }
 
 export const UpcomingTasksPanel = () => {
-  const { tasks, loading, error, fetchTasksForUserAsync } = useTodo();
+  const { tasks, loading, error } = useTodo();
+  const { fetchTasks } = useTaskManager();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const { isLoggedIn, logout } = useAuth();
-  const [upcomingTask, setUpComingTask] = useState([]);
   const [searchText, setSearchText] = useState("");
   const navigate = useNavigate();
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [isLogHoursOpen, setIsLogHoursOpen] = useState(false);
+  const [isCompleteTaskOpen, setIsCompleteTaskOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("All");
 
   const handleLogout = () => {
     logout();
     navigate("/");
   };
-  const getUpcomingTask = async () => {
-    const userId = localStorage.getItem("userId");
-    const today = new Date().toISOString().split("T")[0];
-    console.log("Get Todo");
 
-    const response = await axios.get(
-      `http://localhost:5175/Task/upcoming-task?date=${today}`
-    );
-    setUpComingTask(response.data);
-    console.log(response);
+  const handleLogHours = (task) => {
+    setSelectedTask(task);
+    setIsLogHoursOpen(true);
+  };
+
+  const handleCompleteTask = (task) => {
+    setSelectedTask(task);
+    setIsCompleteTaskOpen(true);
+  };
+
+  const handleTaskCompleted = (completedTask) => {
+    // Refresh the tasks list after completion
+    getUpcomingTask();
+  };
+
+  const getUpcomingTask = async () => {
+    try {
+      const today = new Date().toISOString().split("T")[0];
+      await fetchTasks(today, statusFilter);
+    } catch (error) {
+      console.error("Error fetching upcoming tasks:", error);
+    }
   };
 
   useEffect(() => {
     getUpcomingTask();
-  }, []);
+  }, [statusFilter]);
   return (
     <Card className="card-container">
       <CardHeader className="flex justify-between ">
@@ -85,8 +114,23 @@ export const UpcomingTasksPanel = () => {
                 fontSize: "16px",
               }}
             >
-              Tasks List <span style={{ color: "grey" }}>(6 tasks)</span>
+              Tasks List{" "}
+              <span style={{ color: "grey" }}>({tasks.length} tasks)</span>
             </p>
+            
+            {/* Status Filter */}
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All">All</SelectItem>
+                <SelectItem value="Pending">Pending</SelectItem>
+                <SelectItem value="InProgress">In Progress</SelectItem>
+                <SelectItem value="Completed">Completed</SelectItem>
+                <SelectItem value="Skipped">Skipped</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div
             style={{
@@ -191,7 +235,15 @@ export const UpcomingTasksPanel = () => {
           overflowY: "auto",
         }}
       >
-        {upcomingTask.length === 0 ? (
+        {loading ? (
+          <div className="flex justify-center items-center h-full">
+            <div>Loading tasks...</div>
+          </div>
+        ) : error ? (
+          <div className="flex justify-center items-center h-full">
+            <div className="text-red-500">Error: {error}</div>
+          </div>
+        ) : tasks.length === 0 ? (
           <NoTaskMessage />
         ) : (
           <div
@@ -201,11 +253,11 @@ export const UpcomingTasksPanel = () => {
               flexDirection: "column",
             }}
           >
-            {upcomingTask.map((task) => (
+            {tasks.map((task) => (
               <Row
+                key={task.id}
                 style={{
                   padding: "10px 0px",
-                  // backgroundColor: "red",
                 }}
               >
                 <Row style={{ gap: "10px", width: "100%" }} align={"middle"}>
@@ -234,7 +286,7 @@ export const UpcomingTasksPanel = () => {
                   </div>
                   <Col
                     style={{
-                      width: "80%",
+                      flex: 1,
                     }}
                   >
                     <div
@@ -251,6 +303,47 @@ export const UpcomingTasksPanel = () => {
                       </div>
                     </Row>
                   </Col>
+                  
+                  {/* Action buttons */}
+                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleLogHours(task)}
+                      style={{ padding: "8px", minWidth: "auto" }}
+                    >
+                      <Timer size={16} />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleCompleteTask(task)}
+                      style={{ padding: "8px", minWidth: "auto" }}
+                    >
+                      <CheckCircle size={16} />
+                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          style={{ padding: "8px", minWidth: "auto" }}
+                        >
+                          <MoreVertical size={16} />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleLogHours(task)}>
+                          <Timer className="mr-2" size={16} />
+                          Log Hours
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleCompleteTask(task)}>
+                          <CheckCircle className="mr-2" size={16} />
+                          Complete Task
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </Row>
               </Row>
             ))}
@@ -261,6 +354,25 @@ export const UpcomingTasksPanel = () => {
           onOpenChange={setIsAddTaskOpen}
           mode="add"
         />
+        
+        {selectedTask && (
+          <>
+            <LogHoursDialog
+              isOpen={isLogHoursOpen}
+              onClose={() => setIsLogHoursOpen(false)}
+              task={selectedTask}
+              executionDate={format(selectedDate, 'yyyy-MM-dd')}
+            />
+            
+            <CompleteTaskDialog
+              isOpen={isCompleteTaskOpen}
+              onClose={() => setIsCompleteTaskOpen(false)}
+              task={selectedTask}
+              executionDate={format(selectedDate, 'yyyy-MM-dd')}
+              onTaskCompleted={handleTaskCompleted}
+            />
+          </>
+        )}
       </CardContent>
     </Card>
   );

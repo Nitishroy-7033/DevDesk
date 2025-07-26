@@ -173,6 +173,49 @@ public class TaskService : ITaskService
         var combinedFilter = filters.Count > 0 ? builder.And(filters) : builder.Empty;
         var allTasks = await _taskRepository.GetFilteredTasks(combinedFilter);
 
+        // Apply status filtering based on execution records if specified
+        if (!string.IsNullOrEmpty(query.Status) && query.Status != "All")
+        {
+            var targetDate = query.Date ?? DateTime.Today;
+            var taskIds = allTasks.Select(t => t.Id).ToList();
+            
+            // Get execution records for these tasks on the target date
+            var executions = new List<TaskExecutionRecord>();
+            foreach (var taskId in taskIds)
+            {
+                var execution = await _taskRepository.GetTaskExecutionAsync(taskId, userId, targetDate);
+                if (execution != null)
+                {
+                    executions.Add(execution);
+                }
+            }
+
+            // Filter tasks based on execution status
+            var filteredTaskIds = new HashSet<string>();
+            switch (query.Status.ToLower())
+            {
+                case "completed":
+                    filteredTaskIds = new HashSet<string>(executions.Where(e => e.Status == "Completed").Select(e => e.TaskId));
+                    break;
+                case "inprogress":
+                    filteredTaskIds = new HashSet<string>(executions.Where(e => e.Status == "InProgress").Select(e => e.TaskId));
+                    break;
+                case "pending":
+                    // Tasks without execution records or with NotStarted status
+                    var executedTaskIds = new HashSet<string>(executions.Select(e => e.TaskId));
+                    filteredTaskIds = new HashSet<string>(allTasks.Where(t => 
+                        !executedTaskIds.Contains(t.Id) || 
+                        executions.Any(e => e.TaskId == t.Id && e.Status == "NotStarted")
+                    ).Select(t => t.Id));
+                    break;
+                case "skipped":
+                    filteredTaskIds = new HashSet<string>(executions.Where(e => e.Status == "Skipped").Select(e => e.TaskId));
+                    break;
+            }
+
+            allTasks = allTasks.Where(t => filteredTaskIds.Contains(t.Id)).ToList();
+        }
+
         // Apply sorting
         allTasks = ApplySorting(allTasks, query.SortBy, query.SortOrder);
 

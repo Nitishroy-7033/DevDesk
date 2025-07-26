@@ -1,35 +1,26 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { authAPI } from "@/lib/ApiClient";
+import config from "@/config";
 
 const AuthContext = createContext(undefined);
-
-const LOCAL_STORAGE_KEYS = {
-  token: "token",
-  userId: "userId",
-  userName: "userName",
-  userPhone: "userPhone",
-  userRole: "userRole",
-  isVerified: "isVerified",
-  expireAt: "expireAt",
-  tokenType: "tokenType",
-};
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
   // Load user from localStorage on mount
   useEffect(() => {
-    const token = localStorage.getItem(LOCAL_STORAGE_KEYS.token);
+    const token = localStorage.getItem(config.storageKeys.token);
     if (token) {
       const userObj = {
         token,
-        userId: localStorage.getItem(LOCAL_STORAGE_KEYS.userId),
-        userName: localStorage.getItem(LOCAL_STORAGE_KEYS.userName),
-        userPhone: localStorage.getItem(LOCAL_STORAGE_KEYS.userPhone),
-        userRole: localStorage.getItem(LOCAL_STORAGE_KEYS.userRole),
+        userId: localStorage.getItem(config.storageKeys.userId),
+        userName: localStorage.getItem(config.storageKeys.userName),
+        userPhone: localStorage.getItem(config.storageKeys.userPhone),
+        userRole: localStorage.getItem(config.storageKeys.userRole),
         isVerified:
-          localStorage.getItem(LOCAL_STORAGE_KEYS.isVerified) === "true",
-        expireAt: localStorage.getItem(LOCAL_STORAGE_KEYS.expireAt),
-        tokenType: localStorage.getItem(LOCAL_STORAGE_KEYS.tokenType),
+          localStorage.getItem(config.storageKeys.isVerified) === "true",
+        expireAt: localStorage.getItem(config.storageKeys.expireAt),
+        tokenType: localStorage.getItem(config.storageKeys.tokenType),
       };
       setUser(userObj);
     }
@@ -37,23 +28,40 @@ export const AuthProvider = ({ children }) => {
 
   const login = (data) => {
     // Save in localStorage
-    localStorage.setItem(LOCAL_STORAGE_KEYS.token, data.token);
-    localStorage.setItem(LOCAL_STORAGE_KEYS.userId, data.userId);
-    localStorage.setItem(LOCAL_STORAGE_KEYS.userName, data.userName);
-    localStorage.setItem(LOCAL_STORAGE_KEYS.userPhone, data.userPhone);
-    localStorage.setItem(LOCAL_STORAGE_KEYS.userRole, data.userRole);
-    localStorage.setItem(LOCAL_STORAGE_KEYS.isVerified, data.isVerified);
-    localStorage.setItem(LOCAL_STORAGE_KEYS.expireAt, data.expireAt);
-    localStorage.setItem(LOCAL_STORAGE_KEYS.tokenType, data.tokenType);
+    localStorage.setItem(config.storageKeys.token, data.token);
+    localStorage.setItem(config.storageKeys.userId, data.userId);
+    localStorage.setItem(config.storageKeys.userName, data.userName);
+    localStorage.setItem(config.storageKeys.userPhone, data.userPhone);
+    localStorage.setItem(config.storageKeys.userRole, data.userRole);
+    localStorage.setItem(config.storageKeys.isVerified, data.isVerified);
+    localStorage.setItem(config.storageKeys.expireAt, data.expireAt);
+    localStorage.setItem(config.storageKeys.tokenType, data.tokenType);
 
     setUser(data);
   };
 
-  const logout = () => {
-    Object.values(LOCAL_STORAGE_KEYS).forEach((key) =>
-      localStorage.removeItem(key)
-    );
-    setUser(null);
+  const logout = async () => {
+    try {
+      await authAPI.logout();
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      // Clear local storage regardless of API call result
+      Object.values(config.storageKeys).forEach((key) =>
+        localStorage.removeItem(key)
+      );
+      setUser(null);
+    }
+  };
+
+  const getCurrentUser = async () => {
+    try {
+      const userData = await authAPI.getCurrentUser();
+      return userData;
+    } catch (error) {
+      console.error("Get current user error:", error);
+      return null;
+    }
   };
 
   const isLoggedIn = !!user;
@@ -62,6 +70,7 @@ export const AuthProvider = ({ children }) => {
     user,
     login,
     logout,
+    getCurrentUser,
     isLoggedIn,
   };
 
