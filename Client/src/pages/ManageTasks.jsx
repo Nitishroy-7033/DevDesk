@@ -57,6 +57,7 @@ export const ManageTasks = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
   const [allTasks, setAllTasks] = useState([]);
+  const [calendarTasks, setCalendarTasks] = useState([]);
   const [activeView, setActiveView] = useState("table");
   const [selectedTask, setSelectedTask] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -70,7 +71,7 @@ export const ManageTasks = () => {
       fetchTasks();
     }
   }, [isLoggedIn, navigate]);
-  
+
   const fetchTasks = async () => {
     try {
       // Replace with actual API call to fetch tasks
@@ -82,6 +83,16 @@ export const ManageTasks = () => {
     }
   };
 
+  const getFilteredTasks = async (date) => {
+    try {
+      const tasks = await taskAPI.getTaskByDate(date);
+      setCalendarTasks(tasks);
+      // setAllTasks(tasks);
+      console.log("Filtered tasks:", tasks);
+    } catch (error) {
+      console.error("Failed to fetch filtered tasks:", error);
+    }
+  };
   const TaskCard = ({ task }) => (
     <Card>
       <CardContent>
@@ -187,7 +198,21 @@ export const ManageTasks = () => {
                   <Calendar
                     mode="single"
                     selected={selectedDate}
-                    onSelect={setSelectedDate}
+                    onSelect={(value) => {
+                      if (value) {
+                        setSelectedDate(value);
+                        const year = value.getFullYear();
+                        const month = String(value.getMonth() + 1).padStart(
+                          2,
+                          "0"
+                        ); // getMonth is 0-based
+                        const day = String(value.getDate()).padStart(2, "0");
+                        const formattedDate = `${year}-${month}-${day}`;
+
+                        console.log("Selected date (local):", formattedDate); // ✅ Correct date
+                        getFilteredTasks(formattedDate);
+                      }
+                    }}
                   />
                 </CardContent>
               </Card>
@@ -197,25 +222,39 @@ export const ManageTasks = () => {
                   <CardTitle>
                     Tasks for {selectedDate?.toLocaleDateString()}
                   </CardTitle>
+                  
                 </CardHeader>
                 <CardContent className="tasks-calendar-content">
-                  {/* {allTasks
-                    .filter(
-                      (task) =>
-                        task.date.toDateString() === selectedDate.toDateString()
+                  <div>Upcoming Tasks</div>
+                  {
+                    calendarTasks.upcomingTasks?.length > 0 ? (
+                      calendarTasks.upcomingTasks.map((task) => (
+                       <div>{task.task.iconName}{task.task.title}</div>
+                      ))
+                    ) : (
+                      <div>No upcoming tasks for this date.</div>
                     )
-                    .map((task) => (
-                      <TaskCard key={task.id} task={task} />
-                    ))}
-                  {allTasks.filter(
-                    (task) =>
-                      task.date.toDateString() === selectedDate.toDateString()
-                  ).length === 0 && (
-                    <div className="no-tasks-message">
-                      <CalendarIcon className="icon-large" />
-                      <p>No tasks scheduled for this date</p>
-                    </div>
-                  )} */}
+                  }
+                  <div>completedTasks Tasks</div>
+                  {
+                    calendarTasks.completedTasks?.length > 0 ? (
+                      calendarTasks.completedTasks.map((task) => (
+                       <div>{task.task.iconName}{task.task.title}</div>
+                      ))
+                    ) : (
+                      <div>No upcoming tasks for this date.</div>
+                    )
+                  }
+                  <div>inProgressTasks Tasks</div>
+                  {
+                    calendarTasks.inProgressTasks?.length > 0 ? (
+                      calendarTasks.inProgressTasks.map((task) => (
+                       <div>{task.task.iconName}{task.task.title}</div>
+                      ))
+                    ) : (
+                      <div>No upcoming tasks for this date.</div>
+                    )
+                  }
                 </CardContent>
               </Card>
             </div>
