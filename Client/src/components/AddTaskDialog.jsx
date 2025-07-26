@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
 import { SmileOutlined } from "@ant-design/icons";
-import { X, Clock, Repeat, Palette, Smile } from "lucide-react";
+import {
+  X,
+  Clock,
+  Repeat,
+  Palette,
+  Smile,
+  Calendar,
+  FileText,
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -23,6 +31,7 @@ import apiClient from "./../lib/ApiClient";
 
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { Col, Row } from "antd";
 
 const colors = [
   { name: "Blue", value: "bg-primary", color: "hsl(217 91% 60%)" },
@@ -64,25 +73,137 @@ export const AddTaskDialog = ({
   const [description, setDescription] = useState("");
   const [startTime, setStartTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
   const [icon, setIcon] = useState("");
   const [repeatType, setRepeatType] = useState("daily");
   const [repeatDays, setRepeatDays] = useState([]);
+
+  // Calculate duration between start and end time
+  const calculateDuration = () => {
+    if (!startTime || !endTime) return null;
+
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    const diffInMs = end - start;
+
+    if (diffInMs <= 0) return null;
+
+    const hours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const minutes = Math.floor((diffInMs % (1000 * 60 * 60)) / (1000 * 60));
+
+    if (hours === 0) {
+      return `${minutes} minute${minutes !== 1 ? "s" : ""}`;
+    } else if (minutes === 0) {
+      return `${hours} hour${hours !== 1 ? "s" : ""}`;
+    } else {
+      return `${hours} hour${hours !== 1 ? "s" : ""} ${minutes} minute${
+        minutes !== 1 ? "s" : ""
+      }`;
+    }
+  };
+
+  // Calculate date range duration
+  const calculateDateRangeDuration = () => {
+    if (!startDate || !endDate) return null;
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diffInMs = end - start;
+
+    if (diffInMs < 0) return null;
+
+    const days = Math.ceil(diffInMs / (1000 * 60 * 60 * 24)) + 1;
+    return `${days} day${days !== 1 ? "s" : ""}`;
+  };
+
+  // Validation functions
+  const validateTimeRange = () => {
+    if (!startTime || !endTime) return { isValid: true, message: "" };
+
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    const diffInMs = end - start;
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+
+    if (diffInMs <= 0) {
+      return { isValid: false, message: "End time must be after start time" };
+    }
+
+    if (diffInMinutes < 5) {
+      return {
+        isValid: false,
+        message: "Task duration must be at least 5 minutes",
+      };
+    }
+
+    return { isValid: true, message: "" };
+  };
+
+  const validateDateRange = () => {
+    if (!startDate || !endDate) return { isValid: true, message: "" };
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (end < start) {
+      return {
+        isValid: false,
+        message: "End date cannot be before start date",
+      };
+    }
+
+    return { isValid: true, message: "" };
+  };
+
+  const timeValidation = validateTimeRange();
+  const dateValidation = validateDateRange();
 
   const resetForm = () => {
     setTitle("");
     setDescription("");
     setStartTime(null);
     setEndTime(null);
-    setStartDate(null);
-    setEndDate(null);
+    setStartDate(new Date());
+    setEndDate(new Date());
     setIcon("");
     setRepeatType("daily");
     setRepeatDays([]);
   };
 
   const addTaskAsync = async () => {
+    // Validate title
+    if (!title.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a task title.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate time range
+    const timeValidation = validateTimeRange();
+    if (!timeValidation.isValid) {
+      toast({
+        title: "Error",
+        description: timeValidation.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate date range
+    const dateValidation = validateDateRange();
+    if (!dateValidation.isValid) {
+      toast({
+        title: "Error",
+        description: dateValidation.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
     const userId = localStorage.getItem("userId");
     if (!userId) {
       toast({
@@ -134,171 +255,388 @@ export const AddTaskDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] bg-card border shadow-lg">
+      <DialogContent className="sm:max-w-[700px] bg-card border border-border shadow-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-primary flex items-center">
+          <DialogTitle className="text-2xl font-bold text-primary flex items-center gap-2">
+            <FileText className="w-6 h-6" />
             Add New Task
           </DialogTitle>
         </DialogHeader>
 
-        {/* Title Input */}
-        <div className="space-y-2">
-          <Label htmlFor="title">Title *</Label>
-          <Input
-            id="title"
-            placeholder="Enter task title..."
-            onChange={(e) => setTitle(e.target.value)}
-            value={title}
-            className="bg-background border-input"
-          />
-        </div>
-
-        {/* Description */}
-        <div className="space-y-2">
-          <Label htmlFor="description">Description</Label>
-          <Textarea
-            id="description"
-            placeholder="Add a description for your task..."
-            onChange={(e) => setDescription(e.target.value)}
-            value={description}
-            className="bg-background border-input min-h-[80px]"
-          />
-        </div>
-
-        {/* Time Picker */}
-        <Label className="label">Time</Label>
-        <div className="time-range-container">
-          <DatePicker
-            selected={startTime}
-            onChange={(date) => setStartTime(date)}
-            showTimeSelect
-            showTimeSelectOnly
-            timeIntervals={15}
-            timeCaption="Start"
-            dateFormat="h:mm aa"
-            placeholderText="Start Time"
-            className="custom-input"
-          />
-          <DatePicker
-            selected={endTime}
-            onChange={(date) => setEndTime(date)}
-            showTimeSelect
-            showTimeSelectOnly
-            timeIntervals={15}
-            timeCaption="End"
-            dateFormat="h:mm aa"
-            placeholderText="End Time"
-            className="custom-input"
-          />
-        </div>
-
-        {/* Repeat Dropdown */}
-        <div className="space-y-2">
-          <Label className="text-sm font-medium flex items-center gap-1">
-            <Repeat className="w-4 h-4" />
-            Repeat
-          </Label>
-          <Select value={repeatType} onValueChange={setRepeatType}>
-            <SelectTrigger className="bg-background border-input">
-              <SelectValue placeholder="Select repeat option" />
-            </SelectTrigger>
-            <SelectContent className="bg-popover border shadow-lg">
-              {repeatOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Repeat Days (custom only) */}
-        {repeatType === "custom" && (
+        <div className="space-y-6">
+          {/* Title Input */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Repeat Days</Label>
-            <div className="flex flex-wrap gap-2">
-              {weekDays.map((day) => {
-                const isSelected = repeatDays.includes(day.value);
-                return (
-                  <button
-                    key={day.value}
-                    type="button"
-                    onClick={() => {
-                      const updatedDays = isSelected
-                        ? repeatDays.filter((d) => d !== day.value)
-                        : [...repeatDays, day.value];
-                      setRepeatDays(updatedDays);
-                    }}
-                    className={`px-3 py-1 rounded-full border text-sm font-medium transition ${
-                      isSelected
-                        ? "bg-primary text-white border-primary"
-                        : "bg-background border-muted hover:border-primary/50"
-                    }`}
-                  >
-                    {day.label}
-                  </button>
-                );
-              })}
+            <div
+              htmlFor="title"
+              style={{
+                fontSize: "14px",
+                fontWeight: "500",
+                color: "#707377ff",
+              }}
+            >
+              Title *
             </div>
+            <Input
+              id="title"
+              placeholder="Enter task title..."
+              onChange={(e) => setTitle(e.target.value)}
+              value={title}
+              className="bg-background border-border text-foreground placeholder:text-muted-foreground focus:border-primary"
+              required
+            />
           </div>
-        )}
 
-        {/* Date Range Picker */}
-        <Label className="label">Date Range</Label>
-        <div className="date-range-container">
-          <DatePicker
-            selected={startDate}
-            onChange={(date) => setStartDate(date)}
-            selectsStart
-            startDate={startDate}
-            endDate={endDate}
-            placeholderText="Start Date"
-            className="custom-input"
-          />
-          <DatePicker
-            selected={endDate}
-            onChange={(date) => setEndDate(date)}
-            selectsEnd
-            startDate={startDate}
-            endDate={endDate}
-            minDate={startDate}
-            placeholderText="End Date"
-            className="custom-input"
-          />
-        </div>
-
-        {/* Icon Selection */}
-        <div className="space-y-3">
-          <Label className="text-sm font-medium flex items-center gap-1">
-            <Smile className="w-4 h-4" />
-            Icon
-          </Label>
-          <div className="flex flex-wrap gap-2 mt-1">
-            {icons.map((item) => (
-              <button
-                key={item}
-                type="button"
-                onClick={() => setIcon(item)}
-                className={`w-10 h-10 rounded-lg border transition-all flex items-center justify-center text-lg ${
-                  icon === item
-                    ? "border-primary bg-primary/10 scale-110"
-                    : "border-muted hover:border-primary/50 hover:scale-105"
-                }`}
-              >
-                {item}
-              </button>
-            ))}
+          {/* Description Input */}
+          <div className="space-y-2">
+            <div
+              htmlFor="description"
+              style={{
+                marginTop: "10px",
+                fontSize: "14px",
+                fontWeight: "500",
+                color: "#707377ff",
+              }}
+            >
+              Description{" "}
+              <span className="text-muted-foreground">(Optional)</span>
+            </div>
+            <Textarea
+              id="description"
+              placeholder="Add a description for your task..."
+              onChange={(e) => setDescription(e.target.value)}
+              value={description}
+              className="bg-background border-border text-foreground placeholder:text-muted-foreground focus:border-primary min-h-[80px] resize-none"
+              rows={3}
+            />
           </div>
-        </div>
 
-        {/* Action Buttons */}
-        <div className="flex justify-end gap-4 pt-4">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Close
-          </Button>
-          <Button onClick={addTaskAsync} disabled={loading}>
-            {loading ? "Creating..." : "Create Task"}
-          </Button>
+          {/* Task Time Range */}
+          <div className="space-y-3">
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                marginTop: "10px",
+                fontSize: "14px",
+                alignContent: "center",
+                alignItems: "center",
+                fontWeight: "500",
+                color: "#707377ff",
+              }}
+            >
+              <Clock className="w-4 h-4" />
+              Task Time
+            </div>
+            <Row justify={"space-between"}>
+              <Col>
+                <div
+                  style={{
+                    marginTop: "10px",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    color: "#707377ff",
+                  }}
+                >
+                  Start Time
+                </div>
+                <DatePicker
+                  selected={startTime}
+                  onChange={(time) => setStartTime(time)}
+                  showTimeSelect
+                  showTimeSelectOnly
+                  timeIntervals={15}
+                  timeCaption="Time"
+                  dateFormat="h:mm aa"
+                  placeholderText="Select start time"
+                  className={`w-full px-3 py-2 text-sm border rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
+                    !timeValidation.isValid && startTime && endTime
+                      ? "border-destructive"
+                      : "border-border"
+                  }`}
+                />
+              </Col>
+              <Col>
+                <div
+                  style={{
+                    marginTop: "10px",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    color: "#707377ff",
+                  }}
+                >
+                  End Time
+                </div>
+                <DatePicker
+                  selected={endTime}
+                  onChange={(time) => setEndTime(time)}
+                  showTimeSelect
+                  showTimeSelectOnly
+                  timeIntervals={15}
+                  timeCaption="Time"
+                  dateFormat="h:mm aa"
+                  placeholderText="Select end time"
+                  className={`w-full px-3 py-2 text-sm border rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
+                    !timeValidation.isValid && startTime && endTime
+                      ? "border-destructive"
+                      : "border-border"
+                  }`}
+                />
+              </Col>
+            </Row>
+            {/* Time Duration Display */}
+            {calculateDuration() && timeValidation.isValid && (
+              <div className="mt-2 p-3 bg-muted/20 border border-border rounded-lg">
+                <p className="text-sm text-foreground">
+                  <span className="font-medium">Duration:</span>{" "}
+                  {calculateDuration()}
+                </p>
+              </div>
+            )}
+            {/* Time Validation Error */}
+            {!timeValidation.isValid && startTime && endTime && (
+              <div className="mt-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                <p className="text-sm text-destructive">
+                  <span className="font-medium">Error:</span>{" "}
+                  {timeValidation.message}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Repeat Cycle */}
+          <div className="space-y-3">
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                alignContent: "center",
+                alignItems: "center",
+                marginTop: "10px",
+                marginBottom: "10px",
+                fontSize: "14px",
+                fontWeight: "500",
+                color: "#707377ff",
+              }}
+            >
+              <Repeat className="w-4 h-4" />
+              Repeat Cycle
+            </div>
+            <Select value={repeatType} onValueChange={setRepeatType}>
+              <SelectTrigger className="bg-background border-border text-foreground">
+                <SelectValue placeholder="Select repeat option" />
+              </SelectTrigger>
+              <SelectContent className="bg-popover border-border shadow-lg">
+                {repeatOptions.map((option) => (
+                  <SelectItem
+                    key={option.value}
+                    value={option.value}
+                    className="text-foreground hover:bg-muted"
+                  >
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Custom Repeat Days */}
+            {repeatType === "custom" && (
+              <div className="space-y-2 mt-3">
+                <div
+                  style={{
+                    marginTop: "10px",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    color: "#707377ff",
+                  }}
+                >
+                  Select Days
+                </div>
+                <Row justify={"space-between"}>
+                  {weekDays.map((day) => {
+                    const isSelected = repeatDays.includes(day.value);
+                    return (
+                      <button
+                        key={day.value}
+                        style={{
+                          padding: "10px 15px",
+                        }}
+                        type="button"
+                        onClick={() => {
+                          const updatedDays = isSelected
+                            ? repeatDays.filter((d) => d !== day.value)
+                            : [...repeatDays, day.value];
+                          setRepeatDays(updatedDays);
+                        }}
+                        className={`py-2 px-1 text-xs font-medium rounded-lg border transition-all ${
+                          isSelected
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-background text-foreground border-border hover:border-primary/50 hover:bg-muted"
+                        }`}
+                      >
+                        {day.label}
+                      </button>
+                    );
+                  })}
+                </Row>
+              </div>
+            )}
+          </div>
+
+          {/* Task Date Range */}
+          <div className="space-y-3">
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                alignContent: "center",
+                alignItems: "center",
+                marginTop: "10px",
+                fontSize: "14px",
+                fontWeight: "500",
+                color: "#707377ff",
+              }}
+            >
+              <Calendar className="w-4 h-4" />
+              Task Date Range
+            </div>
+            <Row justify={"space-between"}>
+              <div className="space-y-2">
+                <div
+                  style={{
+                    marginTop: "10px",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    color: "#707377ff",
+                  }}
+                >
+                  Start Date
+                </div>
+                <DatePicker
+                  selected={startDate}
+                  onChange={(date) => setStartDate(date)}
+                  selectsStart
+                  startDate={startDate}
+                  endDate={endDate}
+                  placeholderText="Select start date"
+                  className={`w-full px-3 py-2 text-sm border rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
+                    !dateValidation.isValid && startDate && endDate
+                      ? "border-destructive"
+                      : "border-border"
+                  }`}
+                  dateFormat="MMM dd, yyyy"
+                />
+              </div>
+              <div className="space-y-2">
+                <div
+                  style={{
+                    marginTop: "10px",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    color: "#707377ff",
+                  }}
+                >
+                  End Date
+                </div>
+                <DatePicker
+                  selected={endDate}
+                  onChange={(date) => setEndDate(date)}
+                  selectsEnd
+                  startDate={startDate}
+                  endDate={endDate}
+                  minDate={startDate}
+                  placeholderText="Select end date"
+                  className={`w-full px-3 py-2 text-sm border rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
+                    !dateValidation.isValid && startDate && endDate
+                      ? "border-destructive"
+                      : "border-border"
+                  }`}
+                  dateFormat="MMM dd, yyyy"
+                />
+              </div>
+            </Row>
+            {/* Date Range Duration Display */}
+            {calculateDateRangeDuration() && dateValidation.isValid && (
+              <div className="mt-2 p-3 bg-muted/20 border border-border rounded-lg">
+                <p className="text-sm text-foreground">
+                  <span className="font-medium">Task will run for:</span>{" "}
+                  {calculateDateRangeDuration()}
+                </p>
+              </div>
+            )}
+            {/* Date Validation Error */}
+            {!dateValidation.isValid && startDate && endDate && (
+              <div className="mt-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                <p className="text-sm text-destructive">
+                  <span className="font-medium">Error:</span>{" "}
+                  {dateValidation.message}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Icon Selection */}
+          <div className="space-y-3">
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                alignContent: "center",
+                alignItems: "center",
+                marginTop: "10px",
+                marginBottom: "10px",
+                fontSize: "14px",
+                fontWeight: "500",
+                color: "#707377ff",
+              }}
+            >
+              <Smile className="w-4 h-4" />
+              Choose Icon
+            </div>
+            <Row style={{ gap: "10px" }}>
+              {icons.map((item) => (
+                <button
+                  style={{ padding: "8px" }}
+                  type="button"
+                  onClick={() => setIcon(item)}
+                  className={`w-12 h-12 rounded-lg border transition-all flex items-center justify-center text-xl hover:scale-105 ${
+                    icon === item
+                      ? "border-primary bg-primary/10 scale-110 shadow-lg"
+                      : "border-border bg-background hover:border-primary/50 hover:bg-muted"
+                  }`}
+                >
+                  {item}
+                </button>
+              ))}
+            </Row>
+          </div>
+
+          {/* Action Buttons */}
+          <Row justify={"end"} style={{ marginTop: "10px" }}>
+            <Button
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              style={{
+                marginRight: "10px",
+                padding: "10px 20px",
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={addTaskAsync}
+              // disabled={
+              //   loading ||
+              //   !title.trim() ||
+              //   !timeValidation.isValid ||
+              //   !dateValidation.isValid
+              // }
+              style={{
+                padding: "10px 20px",
+              }}
+            >
+              {loading ? "Creating..." : "Create Task"}
+            </Button>
+          </Row>
         </div>
       </DialogContent>
     </Dialog>
