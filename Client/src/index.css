@@ -166,6 +166,13 @@
 }
 
 @layer utilities {
+  .scroll-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scroll-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
   @keyframes fadeIn {
     from {
       opacity: 0;

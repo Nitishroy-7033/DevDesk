@@ -255,7 +255,12 @@ export const AddTaskDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] bg-card border border-border shadow-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent
+      style={{
+  height: "90vh",
+  overflowY: "auto",
+}}
+      className="scroll-hide bg-card border border-border shadow-lg">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-primary flex items-center gap-2">
             <FileText className="w-6 h-6" />
