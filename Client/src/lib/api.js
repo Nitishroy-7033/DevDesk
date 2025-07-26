@@ -4,7 +4,7 @@ import apiClient, { authAPI } from './ApiClient';
 export const taskAPI = {
   async getTasks(userId = null) {
     try {
-      const response = await apiClient.get('/Task', {
+      const response = await apiClient.get('/Task/all', {
         params: userId ? { userId } : {}
       });
       return response.data;

@@ -22,57 +22,8 @@ import { useNavigate } from "react-router-dom";
 import "./ManageTasks.css"; // Your custom CSS file
 import { BackTop, Table } from "antd";
 import TaskDetailModal from "../components/TaskDetails";
+import { taskAPI } from "../lib/api";
 
-const mockTasks = [
-  {
-    id: 1,
-    title: "Mathematics Study Session",
-    description: "Algebra and Calculus Review",
-    status: "active",
-    startTime: "09:00",
-    endTime: "11:00",
-    date: new Date(),
-    color: "#1e40af", // Tailwind "blue-900"
-    icon: "📚",
-    progress: 45,
-  },
-  {
-    id: 2,
-    title: "Physics Assignment",
-    description: "Complete chapter 5 problems",
-    status: "upcoming",
-    startTime: "14:00",
-    endTime: "16:00",
-    date: new Date(),
-    color: "#16a34a", // Tailwind "green-600"
-    icon: "⚡",
-    progress: 0,
-  },
-  {
-    id: 3,
-    title: "History Essay",
-    description: "World War II research paper",
-    status: "completed",
-    startTime: "10:00",
-    endTime: "12:00",
-    date: new Date(Date.now() - 86400000),
-    color: "#7c3aed", // Tailwind "purple-600"
-    icon: "📝",
-    progress: 100,
-  },
-  {
-    id: 4,
-    title: "Chemistry Lab Report",
-    description: "Organic compounds analysis",
-    status: "pending",
-    startTime: "16:00",
-    endTime: "18:00",
-    date: new Date(Date.now() + 86400000),
-    color: "#ea580c", // Tailwind "orange-600"
-    icon: "🧪",
-    progress: 25,
-  },
-];
 
 const columns = [
   {
@@ -100,11 +51,24 @@ const columns = [
 export const ManageTasks = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
+  const [allTasks, setAllTasks] = useState([]);
   const [activeView, setActiveView] = useState("table");
   const [selectedTask, setSelectedTask] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
+
+  const fetchTasks = async () =>{
+    try {
+      // Replace with actual API call to fetch tasks
+      const tasks = await taskAPI.getTasks();
+      setAllTasks(tasks);
+      console.log("Fetched tasks:", tasks);
+    } catch (error) {
+      console.error("Failed to fetch tasks:", error);
+    }
+  }
+
 
   const TaskCard = ({ task }) => (
     <Card>
@@ -145,7 +109,7 @@ export const ManageTasks = () => {
     pending: [],
   };
 
-  mockTasks.forEach((task) => {
+  allTasks.forEach((task) => {
     if (groupedTasks[task.status]) {
       groupedTasks[task.status].push(task);
     }
@@ -172,7 +136,7 @@ export const ManageTasks = () => {
             >
               <ArrowLeft className="icon" />
             </div>
-            <h1 className="tasks-title">Tasks</h1>
+            <h1 onClick={()=>{fetchTasks()}} className="tasks-title">Tasks</h1>
           </div>
           <Button onClick={() => setIsAddTaskOpen(true)}>
             <Plus className="icon" /> Add
@@ -216,7 +180,7 @@ export const ManageTasks = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="tasks-calendar-content">
-                  {mockTasks
+                  {/* {allTasks
                     .filter(
                       (task) =>
                         task.date.toDateString() === selectedDate.toDateString()
@@ -224,7 +188,7 @@ export const ManageTasks = () => {
                     .map((task) => (
                       <TaskCard key={task.id} task={task} />
                     ))}
-                  {mockTasks.filter(
+                  {allTasks.filter(
                     (task) =>
                       task.date.toDateString() === selectedDate.toDateString()
                   ).length === 0 && (
@@ -232,7 +196,7 @@ export const ManageTasks = () => {
                       <CalendarIcon className="icon-large" />
                       <p>No tasks scheduled for this date</p>
                     </div>
-                  )}
+                  )} */}
                 </CardContent>
               </Card>
             </div>
@@ -249,7 +213,7 @@ export const ManageTasks = () => {
                 };
               }}
               columns={columns}
-              dataSource={mockTasks}
+              dataSource={allTasks}
             />
           </TabsContent>
         </Tabs>
