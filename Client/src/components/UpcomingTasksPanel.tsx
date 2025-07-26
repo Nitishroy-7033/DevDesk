@@ -71,6 +71,8 @@ export const UpcomingTasksPanel = () => {
   const handleLogout = () => {
     logout();
     navigate("/");
+    setStatusFilter("All");
+    fetchTasks([]); // Clear the todo list
   };
 
   const handleLogHours = (task) => {
@@ -123,7 +125,7 @@ export const UpcomingTasksPanel = () => {
             
             {/* Status Filter */}
               
-               <Select value={statusFilter} onValueChange={setStatusFilter}>
+               {/* <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-32">
                 <SelectValue />
               </SelectTrigger>
@@ -134,7 +136,7 @@ export const UpcomingTasksPanel = () => {
                 <SelectItem value="Completed">Completed</SelectItem>
                 <SelectItem value="Skipped">Skipped</SelectItem>
               </SelectContent>
-            </Select>
+            </Select> */}
 
      
 
@@ -178,7 +180,10 @@ export const UpcomingTasksPanel = () => {
             >
               <Search color="grey" />
             </div>
-            <div
+           <div>
+            {
+              isLoggedIn ? (
+                 <div
               onClick={() => setIsAddTaskOpen(true)}
               style={{
                 padding: "10px",
@@ -189,6 +194,10 @@ export const UpcomingTasksPanel = () => {
             >
               <Plus color="white" />
             </div>
+              ) : ""
+            }
+           </div>
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
