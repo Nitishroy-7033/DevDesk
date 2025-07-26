@@ -126,7 +126,7 @@ namespace TaskManager.Controllers
             try
             {
                 var userId = GetCurrentUserId();
-                
+
                 // Parse date parameter (expecting YYYY-MM-DD format)
                 DateTime targetDate = DateTime.Today;
                 if (!string.IsNullOrEmpty(date))
@@ -153,12 +153,12 @@ namespace TaskManager.Controllers
             {
                 var userId = GetCurrentUserId();
                 var targetDate = date ?? DateTime.Today;
-                
+
                 // If status filter is provided, use the filtered method
                 if (!string.IsNullOrEmpty(status) && status != "All")
                 {
-                    var query = new TaskQueryRequest 
-                    { 
+                    var query = new TaskQueryRequest
+                    {
                         Date = targetDate,
                         Status = status,
                         OnlyActiveTasks = true
@@ -166,7 +166,7 @@ namespace TaskManager.Controllers
                     var filteredTasks = await _taskService.GetAllTask(userId, query);
                     return Ok(filteredTasks);
                 }
-                
+
                 var tasks = await _taskService.GetUpcomingTasksAsync(userId, targetDate);
                 return Ok(tasks);
             }
@@ -279,22 +279,27 @@ namespace TaskManager.Controllers
             try
             {
                 var userId = GetCurrentUserId();
-                
+
                 // If task-specific, log to task execution
                 if (!string.IsNullOrEmpty(request.TaskId))
                 {
+                    int totalMinutes = (int)(request.Hours * 60);
+                    int hoursOnly = totalMinutes / 60;
+                    int minutesOnly = totalMinutes % 60;
+
                     var executionRequest = new TaskExecutionRequest
                     {
                         TaskId = request.TaskId,
-                        ExecutionDate = request.Date ?? DateTime.Today,
+                        ExecutionDate = request.Date?.Date ?? DateTime.Today, // removes time part
                         Action = "log-hours",
-                        ActualDurationMinutes = (int)(request.Hours * 60),
+                        ActualDurationMinutes = totalMinutes,
                         Notes = request.Notes
                     };
-                    
+
                     await _taskService.UpdateTaskExecutionAsync(userId, executionRequest);
                 }
-                
+
+
                 return Ok(new { message = "Hours logged successfully", hours = request.Hours });
             }
             catch (Exception ex)
@@ -309,16 +314,16 @@ namespace TaskManager.Controllers
             try
             {
                 var currentUserId = GetCurrentUserId();
-                
+
                 // Only allow users to access their own history
                 if (userId != currentUserId)
                 {
                     return Forbid();
                 }
-                
+
                 var from = fromDate ?? DateTime.Today.AddDays(-30);
                 var to = toDate ?? DateTime.Today;
-                
+
                 var history = await _taskService.GetExecutionHistoryAsync(userId, from, to);
                 return Ok(history);
             }

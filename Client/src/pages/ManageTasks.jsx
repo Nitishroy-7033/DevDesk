@@ -83,6 +83,13 @@ export const ManageTasks = () => {
     }
   };
 
+  const formatTime = (timeString) => {
+  if (!timeString) return "";
+  const [hours, minutes] = timeString.split(":");
+  return `${hours}:${minutes}`;
+};
+
+
   const getFilteredTasks = async (date) => {
     try {
       const tasks = await taskAPI.getTaskByDate(date);
@@ -234,15 +241,15 @@ export const ManageTasks = () => {
                         key={index}
                         className="bg dark:bg-gray-800 shadow-md rounded-xl p-4 border border-gray-200 dark:border-gray-700"
                       >
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className="text-2xl">{task.task.iconName}</span>
+                        <div className="flex items-center gap-1 py-1">
+                          <span className="text-xl">{task.task.iconName}</span>
                           <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                             {task.task.title}
                           </h3>
                         </div>
 
                         {task.task.description && (
-                          <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                          <p className="text-sm text-gray-400 py-1">
                             {task.task.description}
                           </p>
                         )}
@@ -318,6 +325,7 @@ export const ManageTasks = () => {
         open={isModalVisible}
         onOpenChange={setIsModalVisible}
         mode="view"
+
         task={selectedTask}
       />
       <AddTaskDialog

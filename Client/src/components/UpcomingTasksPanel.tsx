@@ -36,7 +36,6 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-
 } from "@/components/ui/select";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Avatar, AvatarFallback } from "@radix-ui/react-avatar";
@@ -122,10 +121,10 @@ export const UpcomingTasksPanel = () => {
               Tasks List{" "}
               <span style={{ color: "grey" }}>({tasks.length} tasks)</span>
             </p>
-            
+
             {/* Status Filter */}
-              
-               {/* <Select value={statusFilter} onValueChange={setStatusFilter}>
+
+            {/* <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-32">
                 <SelectValue />
               </SelectTrigger>
@@ -137,11 +136,6 @@ export const UpcomingTasksPanel = () => {
                 <SelectItem value="Skipped">Skipped</SelectItem>
               </SelectContent>
             </Select> */}
-
-     
-
-
-
           </div>
           <div
             style={{
@@ -180,23 +174,23 @@ export const UpcomingTasksPanel = () => {
             >
               <Search color="grey" />
             </div>
-           <div>
-            {
-              isLoggedIn ? (
-                 <div
-              onClick={() => setIsAddTaskOpen(true)}
-              style={{
-                padding: "10px",
-                backgroundColor: "#3b7be3",
-                borderRadius: "15px",
-                cursor: "pointer",
-              }}
-            >
-              <Plus color="white" />
+            <div>
+              {isLoggedIn ? (
+                <div
+                  onClick={() => setIsAddTaskOpen(true)}
+                  style={{
+                    padding: "10px",
+                    backgroundColor: "#3b7be3",
+                    borderRadius: "15px",
+                    cursor: "pointer",
+                  }}
+                >
+                  <Plus color="white" />
+                </div>
+              ) : (
+                ""
+              )}
             </div>
-              ) : ""
-            }
-           </div>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -264,106 +258,47 @@ export const UpcomingTasksPanel = () => {
         ) : tasks.length === 0 ? (
           <NoTaskMessage />
         ) : (
-          <div
-            style={{
-              gap: "10px",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
+          <div className="flex flex-col gap-4">
             {tasks.map((task) => (
-              <Row
+              <div
                 key={task.id}
-                style={{
-                  padding: "10px 0px",
-                }}
+                className="  dark:bg-gray-800 shadow-md rounded-xl p-4 border border-gray-200 dark:border-gray-700 flex items-center gap-4"
               >
-                <Row style={{ gap: "10px", width: "100%" }} align={"middle"}>
-                  <div className="scale-150">
-                    <Checkbox
-                      checked={task.status === "completed"}
-                      className="custom-checkbox"
-                    />
+                {/* Checkbox */}
+                <div className="scale-150">
+                  <input
+                    type="checkbox"
+                    checked={task.status === "completed"}
+                    className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                    readOnly
+                  />
+                </div>
+
+                {/* Icon */}
+                <div className=" text-white text-2xl w-14 h-14 flex items-center justify-center rounded-xl">
+                  {task.iconName}
+                </div>
+
+                {/* Task Details */}
+                <div className="flex-1">
+                  {/* Title */}
+                  <div className="text-lg font-medium text-gray-900 dark:text-white">
+                    {task.title}
                   </div>
 
-                  <div
-                    style={{
-                      backgroundColor: "#4e4e4eff",
-                      fontSize: "30px",
-                      height: "60px",
-                      width: "60px",
-                      display: "flex",
-                      alignContent: "center",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      justifyItems: "center",
-                      borderRadius: "15px",
-                    }}
-                  >
-                    {task.iconName}
+                  {/* Description & Time */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mt-1">
+                    {task.description && (
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {task.description}
+                      </p>
+                    )}
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                      {task.startTime} - {task.endTime}
+                    </p>
                   </div>
-                  <Col
-                    style={{
-                      flex: 1,
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontSize: "20px",
-                      }}
-                    >
-                      {task.title}
-                    </div>
-                    <Row justify={"space-between"}>
-                      <div>{task.description}</div>
-                      <div>
-                        {task.startTime} - {task.endTime}
-                      </div>
-                    </Row>
-                  </Col>
-                  
-                  {/* Action buttons */}
-                  {/* <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleLogHours(task)}
-                      style={{ padding: "8px", minWidth: "auto" }}
-                    >
-                      <Timer size={16} />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleCompleteTask(task)}
-                      style={{ padding: "8px", minWidth: "auto" }}
-                    >
-                      <CheckCircle size={16} />
-                    </Button>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          style={{ padding: "8px", minWidth: "auto" }}
-                        >
-                          <MoreVertical size={16} />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleLogHours(task)}>
-                          <Timer className="mr-2" size={16} />
-                          Log Hours
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleCompleteTask(task)}>
-                          <CheckCircle className="mr-2" size={16} />
-                          Complete Task
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div> */}
-                </Row>
-              </Row>
+                </div>
+              </div>
             ))}
           </div>
         )}
@@ -372,21 +307,21 @@ export const UpcomingTasksPanel = () => {
           onOpenChange={setIsAddTaskOpen}
           mode="add"
         />
-        
+
         {selectedTask && (
           <>
             <LogHoursDialog
               isOpen={isLogHoursOpen}
               onClose={() => setIsLogHoursOpen(false)}
               task={selectedTask}
-              executionDate={format(selectedDate, 'yyyy-MM-dd')}
+              executionDate={format(selectedDate, "yyyy-MM-dd")}
             />
-            
+
             <CompleteTaskDialog
               isOpen={isCompleteTaskOpen}
               onClose={() => setIsCompleteTaskOpen(false)}
               task={selectedTask}
-              executionDate={format(selectedDate, 'yyyy-MM-dd')}
+              executionDate={format(selectedDate, "yyyy-MM-dd")}
               onTaskCompleted={handleTaskCompleted}
             />
           </>
