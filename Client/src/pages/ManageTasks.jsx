@@ -23,7 +23,7 @@ import "./ManageTasks.css"; // Your custom CSS file
 import { BackTop, Table } from "antd";
 import TaskDetailModal from "../components/TaskDetails";
 import { taskAPI } from "../lib/api";
-
+import { use } from "react";
 
 const columns = [
   {
@@ -43,6 +43,11 @@ const columns = [
     key: "endTime",
   },
   {
+    title: "Repeat",
+    dataIndex: "repeatCycleType",
+    key: "RepeatCycleType",
+  },
+  {
     title: "Status",
     dataIndex: "status",
     key: "status",
@@ -58,7 +63,15 @@ export const ManageTasks = () => {
   const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
 
-  const fetchTasks = async () =>{
+  useEffect(() => {
+    if (!isLoggedIn) {
+      navigate("/");
+    } else {
+      fetchTasks();
+    }
+  }, [isLoggedIn, navigate]);
+  
+  const fetchTasks = async () => {
     try {
       // Replace with actual API call to fetch tasks
       const tasks = await taskAPI.getTasks();
@@ -67,8 +80,7 @@ export const ManageTasks = () => {
     } catch (error) {
       console.error("Failed to fetch tasks:", error);
     }
-  }
-
+  };
 
   const TaskCard = ({ task }) => (
     <Card>
@@ -136,7 +148,14 @@ export const ManageTasks = () => {
             >
               <ArrowLeft className="icon" />
             </div>
-            <h1 onClick={()=>{fetchTasks()}} className="tasks-title">Tasks</h1>
+            <h1
+              onClick={() => {
+                fetchTasks();
+              }}
+              className="tasks-title"
+            >
+              Tasks
+            </h1>
           </div>
           <Button onClick={() => setIsAddTaskOpen(true)}>
             <Plus className="icon" /> Add
