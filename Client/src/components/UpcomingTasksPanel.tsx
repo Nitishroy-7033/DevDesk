@@ -432,7 +432,7 @@ export const UpcomingTasksPanel = () => {
                     </DropdownMenu>
                   </div> */}
                 </Row>
-              </Row>
+              </div>
             ))}
           </div>
         )}
