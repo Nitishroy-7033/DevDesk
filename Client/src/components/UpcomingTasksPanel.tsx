@@ -299,12 +299,12 @@ const formatTime = (timeStr) => {
                 className="  shadow-md rounded-xl p-4 border border-gray-200 dark:border-gray-700 flex items-center gap-4"
               >
                 <Row style={{ gap: "10px", width: "100%" }} align={"middle"}>
-                  <div className="scale-150">
+                  {/* <div className="scale-150">
                     <Checkbox
                       checked={task.status === "completed"}
                       className="custom-checkbox"
                     />
-                  </div>
+                  </div> */}
 
                   <div
                     style={{
