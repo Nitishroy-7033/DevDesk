@@ -54,11 +54,10 @@ export const ActiveTaskPanel = ({
   const handleReset = () => resetTaskWithConfirmation();
   const handleNextTask = () => moveToNextTask();
 
-
   const formatTime = (timeStr) => {
-  // Remove the :00 seconds using regex
-  return timeStr.replace(/:00\s/, " ");
-};
+    // Remove the :00 seconds using regex
+    return timeStr.replace(/:00\s/, " ");
+  };
 
   // If task is completed, show completed card
   if (isCompleted) {
@@ -86,7 +85,14 @@ export const ActiveTaskPanel = ({
           <CardTitle className={`header-title ${isFullscreen ? "large" : ""}`}>
             Active Task
           </CardTitle>
-          <div className="header-actions">
+          <div
+            className="header-actions"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+            }}
+          >
             <div
               onClick={toggleAutoSave}
               style={{
@@ -109,20 +115,6 @@ export const ActiveTaskPanel = ({
                 <SaveOff size={20} color="#ef4444" />
               )}
             </div>
-            {onToggleFullscreen && (
-              <div
-                onClick={onToggleFullscreen}
-                style={{
-                  cursor: "pointer",
-                  padding: "10px",
-                  backgroundColor: "#323639",
-                  border: "1px solid #444444",
-                  borderRadius: "10px",
-                }}
-              >
-                <Maximize size={20} />
-              </div>
-            )}
           </div>
         </Row>
         <br />
@@ -149,10 +141,10 @@ export const ActiveTaskPanel = ({
 
   return (
     <Card
-
       className={isFullscreen ? "fullscreen-card" : "normal-card"}
       style={{
         padding: "20px",
+        height: isFullscreen ? "100vh" : "auto",
         // overflowy:"hidden"
       }}
     >
@@ -282,7 +274,8 @@ export const ActiveTaskPanel = ({
               color: "#cbd5e0",
             }}
           >
-            📅 {formatTime(activeTask.startTime)} - {formatTime(activeTask.endTime)}
+            📅 {formatTime(activeTask.startTime)} -{" "}
+            {formatTime(activeTask.endTime)}
           </div>
           <div
             style={{

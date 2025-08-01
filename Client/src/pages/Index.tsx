@@ -39,7 +39,10 @@ const Index = () => {
             className="grid grid-cols-1 lg:grid-cols-2 gap-8"
             style={{ height: "calc(100vh - 140px)" }}
           >
-            <ActiveTaskPanel onToggleFullscreen={() => setIsFullscreen(true)} />
+            <ActiveTaskPanel
+              isFullscreen={false}
+              onToggleFullscreen={() => setIsFullscreen(true)}
+            />
             <UpcomingTasksPanel />
           </div>
         </main>
