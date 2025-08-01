@@ -79,6 +79,7 @@ export const ActiveTaskPanel = ({
         style={{
           padding: "20px",
           height: isFullscreen ? "100vh" : "none",
+        
         }}
       >
         <Row justify={"space-between"} align={"middle"}>
@@ -90,6 +91,7 @@ export const ActiveTaskPanel = ({
             style={{
               display: "flex",
               alignItems: "center",
+             
               gap: "10px",
             }}
           >
@@ -126,6 +128,7 @@ export const ActiveTaskPanel = ({
             display: "flex",
             flexDirection: "column",
             textAlign: "center",
+           
           }}
         >
           <div style={{ fontSize: "18px", color: "#666" }}>
@@ -145,6 +148,7 @@ export const ActiveTaskPanel = ({
       style={{
         padding: "20px",
         height: isFullscreen ? "100vh" : "auto",
+        
         // overflowy:"hidden"
       }}
     >
@@ -220,6 +224,7 @@ export const ActiveTaskPanel = ({
           <Row
             style={{
               width: isFullscreen ? "40%" : "70%",
+              
             }}
           >
             <Progress
@@ -246,6 +251,7 @@ export const ActiveTaskPanel = ({
               borderRadius: "15px",
               maxWidth: "80%",
               textAlign: "center",
+              
             }}
           >
             {activeTask.iconName} # {activeTask.title}

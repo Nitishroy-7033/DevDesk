@@ -251,12 +251,12 @@ const formatTime = (timeStr) => {
         ) : tasks.length === 0 ? (
           <NoTaskMessage />
         ) : (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 ">
             {tasks.map((task) => (
               <div
                 onClick={()=>handleSetActiveTask(task)}
                 key={task.id}
-                className="  shadow-md rounded-xl p-4 border border-gray-200 dark:border-gray-700 flex items-center gap-4"
+                className="  shadow-md rounded-xl p-4 border border-gray-200 dark:border-gray-700 flex items-center gap-4 cursor-pointer"
               >
                 <Row style={{ gap: "10px", width: "100%" }} align={"middle"}>
                   {/* <div className="scale-150">
