@@ -155,20 +155,7 @@ const formatTime = (timeStr) => {
               <span style={{ color: "grey" }}>({tasks.length} tasks)</span>
             </p>
 
-            {/* Status Filter */}
-
-            {/* <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All">All</SelectItem>
-                <SelectItem value="Pending">Pending</SelectItem>
-                <SelectItem value="InProgress">In Progress</SelectItem>
-                <SelectItem value="Completed">Completed</SelectItem>
-                <SelectItem value="Skipped">Skipped</SelectItem>
-              </SelectContent>
-            </Select> */}
+           
           </div>
           <div
             style={{
@@ -178,43 +165,19 @@ const formatTime = (timeStr) => {
               alignContent: "center",
             }}
           >
-            {/* <ThemeToggle /> */}
-
-            {/* <Input
-              placeholder="Search here.."
-              onChange={(value) => {
-                setSearchText(value.target.value);
-              }}
-              style={{
-                // padding: "5px",
-                fontSize: "20px",
-                fontWeight: "normal",
-                backgroundColor: "#323639",
-                border: "1px solid #444444",
-                borderRadius: "10px",
-                color: "white",
-              }}
-            /> */}
-            <div
-              onClick={() => {}}
-              style={{
-                padding: "10px",
-                backgroundColor: "#323639",
-                border: "1px solid #444444",
-                borderRadius: "15px",
-                cursor: "pointer",
-              }}
-            >
-              <Search color="grey" />
-            </div>
+            
             <div>
               {isLoggedIn ? (
                 <div
                   onClick={() => setIsAddTaskOpen(true)}
                   style={{
-                    padding: "10px",
+                    width: "40px",
+                    height: "40px",
+                    display: "flex",
+                   justifyContent: "center",
+                   alignItems: "center",
                     backgroundColor: "#3b7be3",
-                    borderRadius: "15px",
+                    borderRadius: "20px",
                     cursor: "pointer",
                   }}
                 >
@@ -249,10 +212,7 @@ const formatTime = (timeStr) => {
                       <Settings className="menu-icon" />
                       Manage Tasks
                     </DropdownMenuItem>
-                    {/* <DropdownMenuItem onClick={() => navigate("/progress")}>
-                      <BarChart3 className="menu-icon" />
-                      Progress
-                    </DropdownMenuItem> */}
+                   
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={handleLogout}
