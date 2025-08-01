@@ -39,8 +39,9 @@ const TasksCalendarView = ({
         <CardHeader>
           <CardTitle>Tasks for {selectedDate?.toLocaleDateString()}</CardTitle>
           {/* Daily Statistics */}
-          {stats.totalTasks > 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+          
+            {stats.totalTasks > 0 && (
+            <div className="flex justify-between  md:grid-cols-4 gap-4 mt-4">
               <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                 <div className="text-2xl font-bold text-blue-600">
                   {stats.totalTasks}
@@ -67,6 +68,7 @@ const TasksCalendarView = ({
               </div>
             </div>
           )}
+         
 
           {/* Completion Rate Progress */}
           {stats.totalTasks > 0 && (
@@ -87,7 +89,10 @@ const TasksCalendarView = ({
           )}
         </CardHeader>
 
-        <CardContent className="tasks-calendar-content space-y-4">
+        <div style={{
+        
+        }}>
+          <CardContent className="grid gap-5">
           {/* Render different task sections */}
           {renderTaskSection(
             "Upcoming Tasks",
@@ -114,6 +119,7 @@ const TasksCalendarView = ({
             formatTime
           )}
         </CardContent>
+        </div>
       </Card>
     </div>
   );
@@ -208,11 +214,11 @@ const TaskCalendarItem = ({ taskItem, formatTime, type }) => {
 
   return (
     <div
-      className={`bg-white dark:bg-gray-800 shadow-md rounded-xl p-4 border ${
+      className={`bg-white dark:bg-gray-800 shadow-md rounded-xl  p-4 border ${
         isOverdue
           ? "border-red-300 bg-red-50 dark:bg-red-900/10"
           : "border-gray-200 dark:border-gray-700"
-      } hover:shadow-lg transition-shadow`}
+      } hover:shadow-lg transition-shadow`} 
     >
       {/* Header with icon, title, and status */}
       <div className="flex items-center justify-between mb-3">

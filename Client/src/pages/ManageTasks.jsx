@@ -3,8 +3,8 @@ import { AddTaskDialog } from "@/components/AddTaskDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import "./ManageTasks.css";
-import TasksHeader from "../components/TasksHeader";
-import TasksTabs from "../components/TasksTabs";
+import TasksHeader from "../components/Tasks/TasksHeader";
+import TasksTabs from "../components/Tasks/TasksTabs";
 import useTaskManagement from "../hooks/useTaskManagement";
 
 export const ManageTasks = () => {
