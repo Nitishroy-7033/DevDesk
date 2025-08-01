@@ -108,7 +108,7 @@ export const UpcomingTasksPanel = () => {
       console.error("Error fetching upcoming tasks:", error);
     }
   };
-    function formatTimeUtil(totalSeconds) {
+  function formatTimeUtil(totalSeconds) {
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     // const seconds = totalSeconds % 60;
@@ -119,10 +119,10 @@ export const UpcomingTasksPanel = () => {
 
     return `${paddedHours}:${paddedMinutes}`;
   }
-const formatTime = (timeStr) => {
-  // Remove the :00 seconds using regex
-  return timeStr.replace(/:00\s/, " ");
-};
+  const formatTime = (timeStr) => {
+    // Remove the :00 seconds using regex
+    return timeStr.replace(/:00\s/, " ");
+  };
 
   useEffect(() => {
     getUpcomingTask();
@@ -294,7 +294,7 @@ const formatTime = (timeStr) => {
           <div className="flex flex-col gap-4">
             {tasks.map((task) => (
               <div
-                onClick={()=>handleSetActiveTask(task)}
+                onClick={() => handleSetActiveTask(task)}
                 key={task.id}
                 className="  shadow-md rounded-xl p-4 border border-gray-200 dark:border-gray-700 flex items-center gap-4"
               >
@@ -308,7 +308,6 @@ const formatTime = (timeStr) => {
 
                   <div
                     style={{
-                      
                       fontSize: "30px",
                       height: "60px",
                       width: "60px",
@@ -318,7 +317,6 @@ const formatTime = (timeStr) => {
                       justifyContent: "center",
                       justifyItems: "center",
                       borderRadius: "15px",
-                      
                     }}
                   >
                     {task.iconName}
@@ -330,20 +328,21 @@ const formatTime = (timeStr) => {
                   >
                     <div
                       style={{
-                        display:"flex",
+                        display: "flex",
                         justifyContent: "space-between",
-                        marginBottom: "10px", 
+                        marginBottom: "2px",
                         fontSize: "20px",
                       }}
                     >
                       {task.title}
 
-                       <div>{activeTask?.id === task.id && (
-                         <span className="blinking-dot"></span>
-
-                        )}</div>
+                      <div>
+                        {activeTask?.id === task.id && (
+                          <span className="blinking-dot"></span>
+                        )}
+                      </div>
                     </div>
-                    
+
                     <Row justify={"space-between"} align={"middle"}>
                       <div>{task.description}</div>
                       <div
@@ -353,9 +352,6 @@ const formatTime = (timeStr) => {
                           alignItems: "center",
                         }}
                       >
-
-                       
-                        
                         <span
                           style={{
                             backgroundColor: "#2d3748",
@@ -365,7 +361,8 @@ const formatTime = (timeStr) => {
                             color: "#a0a0a0",
                           }}
                         >
-                           {formatTime(task.startTime)} - {formatTime(task.endTime)}
+                          {formatTime(task.startTime)} -{" "}
+                          {formatTime(task.endTime)}
                         </span>
                         <span
                           style={{
@@ -376,15 +373,15 @@ const formatTime = (timeStr) => {
                             color: "#cbd5e0",
                           }}
                         >
-                         { formatTimeUtil(calculateTaskDuration(task.startTime, task.endTime))}
+                          {formatTimeUtil(
+                            calculateTaskDuration(task.startTime, task.endTime)
+                          )}
                         </span>
-                        
                       </div>
                     </Row>
                   </Col>
 
                   {/* Set Active Task Button */}
-
 
                   {/* <div
                     onClick={() => handleSetActiveTask(task)}
@@ -407,7 +404,6 @@ const formatTime = (timeStr) => {
                   >
                     <PlayCircle size={10} color="white" />
                   </div> */}
-
                 </Row>
               </div>
             ))}
