@@ -479,8 +479,15 @@ export const TodoProvider = ({ children }) => {
         return { success: true, message: "Demo task completed!" };
       }
 
-      // For logged-in users, use real API
-      const result = await taskAPI.completeTask(taskData);
+      // For logged-in users, use real API with correct payload structure
+      const completionPayload = {
+        taskId: taskData.taskId || taskData.id,
+        completionDate: taskData.completionDate || new Date().toISOString(),
+        notes: taskData.notes || "",
+        completionType: taskData.completionType || "Manual",
+      };
+
+      const result = await taskAPI.completeTask(completionPayload);
 
       // Refresh tasks after completion
       await fetchTasksForUserAsync();

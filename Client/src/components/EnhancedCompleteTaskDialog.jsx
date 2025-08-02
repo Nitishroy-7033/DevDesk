@@ -142,57 +142,14 @@ const EnhancedCompleteTaskDialog = ({
 
       const completionRequest = {
         taskId: task.id,
-        executionDate: new Date(executionDate),
-        actualDurationMinutes: completionData.actualDurationMinutes || 0,
-        completionPercentage: formData.completionPercentage,
+        completionDate: new Date().toISOString(),
         notes: formData.notes,
-        completionMethod,
-        actualStartTime: actualStartTime.toISOString(),
-        actualEndTime: actualEndTime.toISOString(),
-        expectedDurationMinutes:
-          completionData.expectedDurationMinutes ||
-          task?.expectedDurationMinutes ||
-          60,
-
-        // Time variance tracking
-        startedEarly: completionData.startedEarly || false,
-        startedLate: completionData.startedLate || false,
-        startedOnTime: completionData.startedOnTime || false,
-        startTimeVarianceMinutes: completionData.startVarianceMinutes || 0,
-
-        completedEarly: completionData.completedEarly || false,
-        completedLate: completionData.completedLate || false,
-        completedOnTime: completionData.completedOnTime || false,
-        completionTimeVarianceMinutes: completionData.endVarianceMinutes || 0,
-
-        completedLessThanExpected:
-          completionData.completedLessThanExpected || false,
-        completedMoreThanExpected:
-          completionData.completedMoreThanExpected || false,
-        completedExactlyAsExpected:
-          completionData.completedExactlyAsExpected || false,
-        durationVarianceMinutes: completionData.durationVarianceMinutes || 0,
-
-        // Quality tracking
-        completionQuality: formData.completionQuality,
-        interruptionCount: formData.interruptionCount,
-        interruptionReasons: formData.interruptionReasons,
-        productivityLevel: formData.productivityLevel,
-
-        // Timer data
-        wasUsingTimer:
-          timerData?.wasUsingTimer || !!(taskStartTime && taskEndTime),
-        timerDurationMinutes:
-          timerData?.duration || completionData.actualDurationMinutes || 0,
-        timerCompletedNaturally: completionMethod === "countdown",
-
-        // Performance metrics
-        efficiencyScore: completionData.efficiencyScore || 1.0,
+        completionType: "Manual",
       };
 
       console.log("Sending completion request:", completionRequest);
 
-      const response = await fetch("http://localhost:5175/task/complete", {
+      const response = await fetch("http://localhost:5175/CompleteTask", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

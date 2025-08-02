@@ -423,10 +423,9 @@ export const ActiveTaskProvider = ({ children }) => {
 
     const completionRequest = {
       taskId: activeTask.id,
-      executionDate: new Date().toISOString().split("T")[0],
-      completionPercentage: 100,
-      notes: "",
-      ...completionData,
+      completionDate: new Date().toISOString(),
+      notes: completionData.notes || "",
+      completionType: "Timer",
     };
 
     // Check if user is logged in

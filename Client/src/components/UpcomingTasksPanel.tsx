@@ -88,15 +88,11 @@ export const UpcomingTasksPanel = () => {
 
   const handleCompleteTask = async (task) => {
     try {
-      const now = new Date();
       const completionRequest = {
         taskId: task.id,
-        executionDate: format(selectedDate, "yyyy-MM-dd"),
-        completionPercentage: 100,
+        completionDate: new Date().toISOString(),
         notes: "",
-        actualStartTime: now.toISOString(),
-        actualEndTime: now.toISOString(),
-        actualDurationMinutes: task.expectedDurationMinutes || 0,
+        completionType: "Manual",
       };
 
       console.log("Sending completion request:", completionRequest);

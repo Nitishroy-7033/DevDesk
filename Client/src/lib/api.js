@@ -131,7 +131,12 @@ export const taskAPI = {
 
   async completeTask(taskData) {
     try {
-      const response = await apiClient.post("/Task/complete", taskData);
+      const response = await apiClient.post("/CompleteTask", {
+        taskId: taskData.taskId,
+        completionDate: taskData.completionDate || new Date().toISOString(),
+        notes: taskData.notes || "",
+        completionType: taskData.completionType || "Manual"
+      });
       return response.data;
     } catch (error) {
       throw new Error(

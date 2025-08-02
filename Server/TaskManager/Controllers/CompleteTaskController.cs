@@ -6,7 +6,7 @@ using TaskManager.Services.Interfaces;
 
 namespace TaskManager.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class CompleteTaskController : ControllerBase
     {

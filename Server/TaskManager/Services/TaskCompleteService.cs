@@ -31,7 +31,7 @@ public class TaskCompleteService : ITaskCompleteService
 
         var completedTask = new CompletedTask
         {
-            Id = task.Id,
+            TaskId = task.Id,
             UserId = task.UserId,
             Title = task.Title,
             Description = task.Description,
