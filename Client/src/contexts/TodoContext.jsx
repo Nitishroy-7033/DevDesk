@@ -4,6 +4,11 @@ import config from "@/config";
 
 const TodoContext = createContext(undefined);
 
+// Storage keys for persistence
+const STORAGE_KEYS = {
+  COMPLETED_TASKS: "zappy_completed_tasks",
+};
+
 // Initial state
 const initialState = {
   tasks: [],
@@ -280,6 +285,58 @@ const todoReducer = (state, action) => {
 export const TodoProvider = ({ children }) => {
   const [state, dispatch] = useReducer(todoReducer, initialState);
 
+  // Persistence functions for completed tasks
+  const saveCompletedTasks = (completedTaskIds) => {
+    try {
+      const completedData = {
+        taskIds: completedTaskIds,
+        timestamp: Date.now(),
+      };
+      localStorage.setItem(STORAGE_KEYS.COMPLETED_TASKS, JSON.stringify(completedData));
+    } catch (error) {
+      console.error('Error saving completed tasks:', error);
+    }
+  };
+
+  const loadCompletedTasks = () => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.COMPLETED_TASKS);
+      if (saved) {
+        const data = JSON.parse(saved);
+        // Only return if saved within last 24 hours to avoid stale data
+        if (Date.now() - data.timestamp < 24 * 60 * 60 * 1000) {
+          return data.taskIds || [];
+        }
+      }
+    } catch (error) {
+      console.error('Error loading completed tasks:', error);
+    }
+    return [];
+  };
+
+  // Apply completed state on initial load
+  useEffect(() => {
+    if (state.tasks.length > 0) {
+      const completedTaskIds = loadCompletedTasks();
+      if (completedTaskIds.length > 0) {
+        const updatedTasks = state.tasks.map(task => ({
+          ...task,
+          isCompleted: completedTaskIds.includes(task.id),
+          status: completedTaskIds.includes(task.id) ? "completed" : task.status,
+        }));
+        
+        // Only update if there are changes
+        const hasChanges = updatedTasks.some((task, index) => 
+          task.isCompleted !== state.tasks[index]?.isCompleted
+        );
+        
+        if (hasChanges) {
+          dispatch({ type: actionTypes.SET_TASKS, payload: updatedTasks });
+        }
+      }
+    }
+  }, [state.tasks.length]); // Only run when tasks are first loaded
+
   // Action creators
   const setLoading = (loading) => {
     dispatch({ type: actionTypes.SET_LOADING, payload: loading });
@@ -472,9 +529,18 @@ export const TodoProvider = ({ children }) => {
         // Simulate API delay
         await new Promise((resolve) => setTimeout(resolve, 800));
 
-        // Update demo task status locally
-        const updatedTask = { ...taskData, status: "completed" };
-        dispatch({ type: actionTypes.UPDATE_TASK, payload: updatedTask });
+        // Update demo task status locally - find task by ID and mark as completed
+        const taskId = taskData.taskId || taskData.id;
+        const updatedTask = state.tasks.find(task => task.id === taskId);
+        if (updatedTask) {
+          const completedTask = { ...updatedTask, status: "completed", isCompleted: true };
+          dispatch({ type: actionTypes.UPDATE_TASK, payload: completedTask });
+          
+          // Save completed task to localStorage for persistence in demo mode too
+          const currentCompleted = loadCompletedTasks();
+          const newCompleted = [...new Set([...currentCompleted, taskId])];
+          saveCompletedTasks(newCompleted);
+        }
 
         return { success: true, message: "Demo task completed!" };
       }
@@ -489,8 +555,18 @@ export const TodoProvider = ({ children }) => {
 
       const result = await taskAPI.completeTask(completionPayload);
 
-      // Refresh tasks after completion
-      await fetchTasksForUserAsync();
+      // Mark task as completed locally immediately for better UX
+      const taskId = taskData.taskId || taskData.id;
+      const updatedTask = state.tasks.find(task => task.id === taskId);
+      if (updatedTask) {
+        const completedTask = { ...updatedTask, status: "completed", isCompleted: true };
+        dispatch({ type: actionTypes.UPDATE_TASK, payload: completedTask });
+        
+        // Save completed task to localStorage for persistence
+        const currentCompleted = loadCompletedTasks();
+        const newCompleted = [...new Set([...currentCompleted, taskId])];
+        saveCompletedTasks(newCompleted);
+      }
 
       return result;
     } catch (error) {

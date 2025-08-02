@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { useActiveTask } from "@/contexts/ActiveTaskContext";
+import { useTodo } from "@/contexts/TodoContext";
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -38,6 +39,7 @@ const EnhancedCompleteTaskDialog = ({
   timerData = null, // { startTime, endTime, duration, wasUsingTimer }
 }) => {
   const { activeTask, taskStartTime, taskEndTime } = useActiveTask();
+  const { completeTask } = useTodo();
 
   const [formData, setFormData] = useState({
     completionPercentage: 100,
@@ -131,41 +133,20 @@ const EnhancedCompleteTaskDialog = ({
   const handleComplete = async () => {
     setLoading(true);
     try {
-      // Ensure we have valid timestamps
-      const now = new Date();
-      const actualStartTime =
-        completionData.actualStartTime ||
-        (taskStartTime ? new Date(taskStartTime) : now);
-      const actualEndTime =
-        completionData.actualEndTime ||
-        (taskEndTime ? new Date(taskEndTime) : now);
-
       const completionRequest = {
         taskId: task.id,
         completionDate: new Date().toISOString(),
         notes: formData.notes,
-        completionType: "Manual",
+        completionType: completionMethod === "countdown" ? "Timer" : "Manual",
       };
 
       console.log("Sending completion request:", completionRequest);
 
-      const response = await fetch("http://localhost:5175/CompleteTask", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(completionRequest),
-      });
-
-      if (response.ok) {
-        onTaskCompleted?.(task);
-        onClose();
-      } else {
-        const errorData = await response.text();
-        console.error("Failed to complete task:", errorData);
-        alert(`Failed to complete task: ${errorData}`);
-      }
+      // Use TodoContext to complete the task
+      await completeTask(completionRequest);
+      
+      onTaskCompleted?.(task);
+      onClose();
     } catch (error) {
       console.error("Error completing task:", error);
       alert(`Error completing task: ${error.message}`);

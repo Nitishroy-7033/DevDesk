@@ -271,86 +271,121 @@ export const UpcomingTasksPanel = () => {
             <NoTaskMessage />
           ) : (
             <div className="flex flex-col gap-4 ">
-              {tasks.map((task) => (
-                <div
-                  onClick={() => handleSetActiveTask(task)}
-                  key={task.id}
-                  className="  shadow-md rounded-xl p-4 border border-gray-200 dark:border-gray-700 flex items-center gap-4 cursor-pointer"
-                >
-                  <Row style={{ gap: "10px", width: "100%" }} align={"middle"}>
-                    {/* <div className="scale-150">
-                    <Checkbox
-                      checked={task.status === "completed"}
-                      className="custom-checkbox"
-                    />
-                  </div> */}
-
+              {/* Sort tasks: non-completed first, then completed */}
+              {tasks
+                .sort((a, b) => {
+                  // If both are completed or both are not completed, maintain original order
+                  if ((a.isCompleted || a.status === "completed") === (b.isCompleted || b.status === "completed")) {
+                    return 0;
+                  }
+                  // Put non-completed tasks first
+                  return (a.isCompleted || a.status === "completed") ? 1 : -1;
+                })
+                .map((task) => {
+                  const isTaskCompleted = task.isCompleted || task.status === "completed";
+                  
+                  return (
                     <div
-                      style={{
-                        fontSize: "30px",
-                        height: "60px",
-                        width: "60px",
-                        display: "flex",
-                        alignContent: "center",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        justifyItems: "center",
-                        borderRadius: "15px",
-                      }}
+                      onClick={() => !isTaskCompleted && handleSetActiveTask(task)}
+                      key={task.id}
+                      className={`shadow-md rounded-xl p-4 border border-gray-200 dark:border-gray-700 flex items-center gap-4 ${
+                        !isTaskCompleted ? 'cursor-pointer' : 'cursor-default opacity-70'
+                      }`}
                     >
-                      {task.iconName}
-                    </div>
-                    <Col
-                      style={{
-                        flex: 1,
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          marginBottom: "2px",
-                          fontSize: "20px",
-                        }}
-                      >
-                        {task.title}
-
+                      <Row style={{ gap: "10px", width: "100%" }} align={"middle"}>
                         <div
                           style={{
+                            fontSize: "30px",
+                            height: "60px",
+                            width: "60px",
                             display: "flex",
-                            gap: "8px",
+                            alignContent: "center",
                             alignItems: "center",
+                            justifyContent: "center",
+                            justifyItems: "center",
+                            borderRadius: "15px",
                           }}
                         >
-                          {activeTask?.id === task.id && (
-                            <span className="blinking-dot"></span>
-                          )}
-
-                          {/* Complete Task Button */}
-                          <div
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleCompleteTask(task);
-                            }}
-                            style={{
-                              padding: "6px",
-                              backgroundColor: "#52c41a",
-                              border: "1px solid #444444",
-                              borderRadius: "8px",
-                              cursor: "pointer",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
-                            title="Complete Task"
-                          >
-                            <CheckCircle size={16} color="white" />
-                          </div>
+                          {task.iconName}
                         </div>
-                      </div>
+                        <Col
+                          style={{
+                            flex: 1,
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              marginBottom: "2px",
+                              fontSize: "20px",
+                            }}
+                          >
+                            <span style={{ 
+                              textDecoration: isTaskCompleted ? 'line-through' : 'none',
+                              color: isTaskCompleted ? '#888' : 'inherit'
+                            }}>
+                              {task.title}
+                            </span>
+
+                            <div
+                              style={{
+                                display: "flex",
+                                gap: "8px",
+                                alignItems: "center",
+                              }}
+                            >
+                              {activeTask?.id === task.id && !isTaskCompleted && (
+                                <span className="blinking-dot"></span>
+                              )}
+
+                              {/* Show green circle for completed tasks, complete button for others */}
+                              {isTaskCompleted ? (
+                                <div
+                                  style={{
+                                    padding: "6px",
+                                    backgroundColor: "#52c41a",
+                                    border: "1px solid #52c41a",
+                                    borderRadius: "50%",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                  }}
+                                  title="Task Completed"
+                                >
+                                  <CheckCircle size={16} color="white" />
+                                </div>
+                              ) : (
+                                <div
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleCompleteTask(task);
+                                  }}
+                                  style={{
+                                    padding: "6px",
+                                    backgroundColor: "#52c41a",
+                                    border: "1px solid #444444",
+                                    borderRadius: "8px",
+                                    cursor: "pointer",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                  }}
+                                  title="Complete Task"
+                                >
+                                  <CheckCircle size={16} color="white" />
+                                </div>
+                              )}
+                            </div>
+                          </div>
 
                       <Row justify={"space-between"} align={"middle"}>
-                        <div>{task.description}</div>
+                        <div style={{ 
+                          textDecoration: isTaskCompleted ? 'line-through' : 'none',
+                          color: isTaskCompleted ? '#888' : 'inherit'
+                        }}>
+                          {task.description}
+                        </div>
                         <div
                           style={{
                             display: "flex",
@@ -364,7 +399,7 @@ export const UpcomingTasksPanel = () => {
                               padding: "2px 8px",
                               borderRadius: "8px",
                               fontSize: "12px",
-                              color: "#a0a0a0",
+                              color: isTaskCompleted ? "#666" : "#a0a0a0",
                             }}
                           >
                             {formatTime(task.startTime)} -{" "}
@@ -376,7 +411,7 @@ export const UpcomingTasksPanel = () => {
                               padding: "2px 8px",
                               borderRadius: "8px",
                               fontSize: "12px",
-                              color: "#cbd5e0",
+                              color: isTaskCompleted ? "#666" : "#cbd5e0",
                             }}
                           >
                             {formatTimeUtil(
@@ -389,33 +424,10 @@ export const UpcomingTasksPanel = () => {
                         </div>
                       </Row>
                     </Col>
-
-                    {/* Set Active Task Button */}
-
-                    {/* <div
-                    onClick={() => handleSetActiveTask(task)}
-                    style={{
-                      padding: "10px",
-                      backgroundColor:
-                        activeTask?.id === task.id ? "#51cf66" : "#4dabf7",
-                      border: "1px solid #444444",
-                      borderRadius: "15px",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                    title={
-                      activeTask?.id === task.id
-                        ? "Currently Active"
-                        : "Set as Active Task"
-                    }
-                  >
-                    <PlayCircle size={10} color="white" />
-                  </div> */}
                   </Row>
                 </div>
-              ))}
+                  );
+                })}
             </div>
           )}
           <AddTaskDialog

@@ -9,6 +9,7 @@ const STORAGE_KEYS = {
   TIMER_STATE: "zappy_timer_state",
   AVAILABLE_TASKS: "zappy_available_tasks",
   AUTO_SAVE_ENABLED: "zappy_auto_save_enabled",
+  TASK_TIMER_STATES: "zappy_task_timer_states", // New key for per-task timer states
 };
 
 export const ActiveTaskProvider = ({ children }) => {
@@ -96,6 +97,30 @@ export const ActiveTaskProvider = ({ children }) => {
 
     loadPersistedState();
   }, []);
+
+  // Task-specific timer state management
+  const saveTaskTimerState = (taskId, state) => {
+    try {
+      const allTaskStates = JSON.parse(localStorage.getItem(STORAGE_KEYS.TASK_TIMER_STATES) || '{}');
+      allTaskStates[taskId] = {
+        ...state,
+        lastSaved: Date.now(),
+      };
+      localStorage.setItem(STORAGE_KEYS.TASK_TIMER_STATES, JSON.stringify(allTaskStates));
+    } catch (error) {
+      console.error('Error saving task timer state:', error);
+    }
+  };
+
+  const loadTaskTimerState = (taskId) => {
+    try {
+      const allTaskStates = JSON.parse(localStorage.getItem(STORAGE_KEYS.TASK_TIMER_STATES) || '{}');
+      return allTaskStates[taskId] || null;
+    } catch (error) {
+      console.error('Error loading task timer state:', error);
+      return null;
+    }
+  };
 
   // Save state to localStorage whenever relevant state changes (only if auto-save is enabled)
   useEffect(() => {
@@ -202,49 +227,110 @@ export const ActiveTaskProvider = ({ children }) => {
   const setActiveTaskFromUpcoming = (task) => {
     if (!task) return;
 
+    // If the same task is already active, don't reset the timer
+    if (activeTask && activeTask.id === task.id) {
+      return;
+    }
+
+    // Save current task timer state before switching
+    if (activeTask && autoSaveEnabled) {
+      saveTaskTimerState(activeTask.id, {
+        timeRemaining,
+        totalTime,
+        isRunning: false, // Always pause when switching
+        isCompleted,
+        taskStartTime,
+        taskEndTime,
+        completionMethod,
+      });
+    }
+
     const duration = calculateDuration(task.startTime, task.endTime);
+    
+    // Try to load saved timer state for this task
+    const savedState = loadTaskTimerState(task.id);
+    
     setActiveTask(task);
-    setTotalTime(duration);
-    setTimeRemaining(duration);
-    setIsCompleted(false);
-    setIsRunning(false);
-    setTaskStartTime(null); // Reset start time for new task
-    setTaskEndTime(null); // Reset end time for new task
-    setCompletionMethod(null); // Reset completion method
+    
+    if (savedState && !savedState.isCompleted) {
+      // Restore saved timer state
+      setTotalTime(savedState.totalTime || duration);
+      setTimeRemaining(savedState.timeRemaining || duration);
+      setIsCompleted(savedState.isCompleted || false);
+      setTaskStartTime(savedState.taskStartTime || null);
+      setTaskEndTime(savedState.taskEndTime || null);
+      setCompletionMethod(savedState.completionMethod || null);
+    } else {
+      // Fresh start for this task
+      setTotalTime(duration);
+      setTimeRemaining(duration);
+      setIsCompleted(false);
+      setTaskStartTime(null);
+      setTaskEndTime(null);
+      setCompletionMethod(null);
+    }
+    
+    setIsRunning(false); // Always start paused when switching tasks
   };
 
   // Set available tasks and auto-select first non-completed task if no active task
   const setAvailableTasksAndAutoSelect = (tasks) => {
     setAvailableTasks(tasks);
 
-    // Auto-select first non-completed task if no active task is selected and tasks are available
-    if (!activeTask && tasks.length > 0) {
-      // Try to find the first task that's not completed
-      // Since we don't have direct status on tasks, we'll just pick the first task
-      // and let the UpcomingTasksPanel filter handle completed tasks
-      const firstTask = tasks[0];
-      setActiveTaskFromUpcoming(firstTask);
+    // Filter out completed tasks
+    const nonCompletedTasks = tasks.filter(task => !task.isCompleted);
+
+    // If current active task is completed, clear it
+    if (activeTask && activeTask.isCompleted) {
+      setActiveTask(null);
+      setIsRunning(false);
+      setTimeRemaining(0);
+      setTotalTime(0);
+      setIsCompleted(false);
+    }
+
+    // Auto-select first non-completed task if no active task is selected and non-completed tasks are available
+    if (!activeTask && nonCompletedTasks.length > 0) {
+      const firstNonCompletedTask = nonCompletedTasks[0];
+      setActiveTaskFromUpcoming(firstNonCompletedTask);
+    } else if (!activeTask && nonCompletedTasks.length === 0) {
+      // No non-completed tasks available, clear active task
+      setActiveTask(null);
+      setIsRunning(false);
+      setTimeRemaining(0);
+      setTotalTime(0);
+      setIsCompleted(false);
     }
   };
 
-  // Get next task in the list
+  // Get next task in the list (excluding completed tasks)
   const getNextTask = () => {
     if (!activeTask || availableTasks.length === 0) return null;
 
-    const currentIndex = availableTasks.findIndex(
+    // Filter out completed tasks
+    const nonCompletedTasks = availableTasks.filter(task => !task.isCompleted);
+    
+    const currentIndex = nonCompletedTasks.findIndex(
       (task) => task.id === activeTask.id
     );
-    if (currentIndex === -1 || currentIndex === availableTasks.length - 1)
+    if (currentIndex === -1 || currentIndex === nonCompletedTasks.length - 1)
       return null;
 
-    return availableTasks[currentIndex + 1];
+    return nonCompletedTasks[currentIndex + 1];
   };
 
-  // Move to next task
+  // Move to next task (only non-completed tasks)
   const moveToNextTask = () => {
     const nextTask = getNextTask();
     if (nextTask) {
       setActiveTaskFromUpcoming(nextTask);
+    } else {
+      // No more non-completed tasks, clear active task
+      setActiveTask(null);
+      setIsRunning(false);
+      setTimeRemaining(0);
+      setTotalTime(0);
+      setIsCompleted(false);
     }
   };
 
@@ -317,6 +403,27 @@ export const ActiveTaskProvider = ({ children }) => {
     }
     return () => clearInterval(interval);
   }, [isRunning, timeRemaining, activeTask, autoSaveEnabled]);
+
+  // Monitor active task for completion status changes
+  useEffect(() => {
+    if (activeTask && activeTask.isCompleted) {
+      // Current active task has been marked as completed, clear it and move to next
+      setActiveTask(null);
+      setIsRunning(false);
+      setTimeRemaining(0);
+      setTotalTime(0);
+      setIsCompleted(false);
+      setTaskStartTime(null);
+      setTaskEndTime(null);
+      setCompletionMethod(null);
+      
+      // Try to find next non-completed task from available tasks
+      const nonCompletedTasks = availableTasks.filter(task => !task.isCompleted);
+      if (nonCompletedTasks.length > 0) {
+        setActiveTaskFromUpcoming(nonCompletedTasks[0]);
+      }
+    }
+  }, [activeTask, availableTasks]);
 
   const startTimer = () => {
     if (activeTask && timeRemaining > 0) {

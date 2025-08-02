@@ -155,15 +155,16 @@ export const ActiveTaskPanel = ({
   }
 
   return (
-    <Card
-      className={isFullscreen ? "fullscreen-card" : "normal-card"}
-      style={{
-        padding: "20px",
-        height: isFullscreen ? "100vh" : "auto",
+    <>
+      <Card
+        className={isFullscreen ? "fullscreen-card" : "normal-card"}
+        style={{
+          padding: "20px",
+          height: isFullscreen ? "100vh" : "auto",
 
-        // overflowy:"hidden"
-      }}
-    >
+          // overflowy:"hidden"
+        }}
+      >
       <Row justify={"space-between"} align={"middle"}>
         <CardTitle className={`header-title ${isFullscreen ? "large" : ""}`}>
           Active Task
@@ -361,6 +362,25 @@ export const ActiveTaskPanel = ({
         </Row>
       </Col>
     </Card>
+
+    {/* Enhanced Complete Task Dialog */}
+    {isCompleteDialogOpen && (
+      <EnhancedCompleteTaskDialog
+        isOpen={isCompleteDialogOpen}
+        onClose={() => setIsCompleteDialogOpen(false)}
+        task={activeTask}
+        executionDate={new Date().toISOString()}
+        onTaskCompleted={handleTaskCompleted}
+        completionMethod="manual"
+        timerData={{
+          startTime: taskStartTime,
+          endTime: taskEndTime,
+          duration: totalTime,
+          wasUsingTimer: isRunning || timeRemaining < totalTime
+        }}
+      />
+    )}
+    </>
   );
 };
 
