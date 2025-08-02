@@ -47,6 +47,7 @@ import { useTaskManager } from "@/hooks/useTaskManager";
 import { useActiveTask } from "@/contexts/ActiveTaskContext";
 import { calculateTaskDuration, formatTime } from "@/utils/timeUtils";
 import { taskAPI } from "@/lib/api";
+import DemoModeBanner from "./DemoModeBanner.jsx";
 interface Task {
   id: string;
   title: string;
@@ -57,7 +58,7 @@ interface Task {
 }
 
 export const UpcomingTasksPanel = () => {
-  const { tasks, loading, error } = useTodo();
+  const { tasks, loading, error, completeTask } = useTodo();
   const { fetchTasks } = useTaskManager();
   const {
     setActiveTaskFromUpcoming,
@@ -71,12 +72,12 @@ export const UpcomingTasksPanel = () => {
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [isLogHoursOpen, setIsLogHoursOpen] = useState(false);
-  const [statusFilter, setStatusFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("Pending");
 
   const handleLogout = () => {
     logout();
     navigate("/");
-    setStatusFilter("All");
+    setStatusFilter("Pending");
     fetchTasks([]); // Clear the todo list
   };
 
@@ -100,18 +101,19 @@ export const UpcomingTasksPanel = () => {
 
       console.log("Sending completion request:", completionRequest);
 
-      // Use the centralized API method
-      const result = await taskAPI.completeTask(completionRequest);
+      // Use the TodoContext completeTask method which handles both demo and real mode
+      const result = await completeTask(completionRequest);
       console.log("Task completion response:", result);
 
-      // Refresh the tasks list after completion
-      await fetchTasks([]);
-
       // Show success message
-      alert("Task completed successfully!");
+      if (isLoggedIn) {
+        alert("Task completed successfully!");
+      } else {
+        alert("Demo task completed! Login to save your real tasks.");
+      }
     } catch (error) {
       console.error("Error completing task:", error);
-      alert(`Failed to complete task: ${error.message}`);
+      alert(`${error.message}`);
     }
   };
 
@@ -149,244 +151,252 @@ export const UpcomingTasksPanel = () => {
 
   // Auto-set first task as active when tasks are loaded and no active task exists
   useEffect(() => {
-    if (tasks.length > 0 && isLoggedIn) {
+    if (tasks.length > 0) {
       setAvailableTasksAndAutoSelect(tasks);
     }
-  }, [tasks, setAvailableTasksAndAutoSelect, isLoggedIn]);
+  }, [tasks, setAvailableTasksAndAutoSelect]);
+
   return (
-    <Card className="card-container">
-      <CardHeader className="flex justify-between ">
-        <CardTitle className=" flex  justify-between">
-          <div
-            style={{
-              gap: "10px",
-              alignItems: "center",
-              display: "flex",
-            }}
-          >
-            <Calendar width={"20px"} />
-            <p
+    <>
+      {/* <DemoModeBanner /> */}
+      <Card className="card-container">
+        <CardHeader className="flex justify-between ">
+          <CardTitle className=" flex  justify-between">
+            <div
               style={{
-                fontSize: "16px",
+                gap: "10px",
+                alignItems: "center",
+                display: "flex",
               }}
             >
-              Tasks List{" "}
-              <span style={{ color: "grey" }}>({tasks.length} tasks)</span>
-            </p>
-          </div>
-          <div
-            style={{
-              display: "flex",
-              gap: "10px",
-              alignItems: "center",
-              alignContent: "center",
-            }}
-          >
-            <div>
-              {isLoggedIn ? (
-                <div
-                  onClick={() => setIsAddTaskOpen(true)}
-                  style={{
-                    width: "40px",
-                    height: "40px",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    backgroundColor: "#3b7be3",
-                    borderRadius: "20px",
-                    cursor: "pointer",
-                  }}
-                >
-                  <Plus color="white" />
-                </div>
-              ) : (
-                ""
-              )}
-            </div>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  style={{
-                    width: "40px",
-                    height: "40px",
-                    borderRadius: "100px",
-                  }}
-                >
-                  <Avatar>
-                    <AvatarFallback>
-                      <User className="avatar-icon" />
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-
-              <DropdownMenuContent align="end">
-                {isLoggedIn ? (
-                  <>
-                    <DropdownMenuItem onClick={() => navigate("/manage-tasks")}>
-                      <Settings className="menu-icon" />
-                      Manage Tasks
-                    </DropdownMenuItem>
-
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={handleLogout}
-                      className="logout-item"
-                    >
-                      <LogIn className="menu-icon" />
-                      Logout
-                    </DropdownMenuItem>
-                  </>
-                ) : (
-                  <DropdownMenuItem onClick={() => navigate("/login")}>
-                    <LogIn className="menu-icon" />
-                    Login
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </CardTitle>
-      </CardHeader>
-
-      <CardContent
-        style={{
-          height: "70vh",
-          overflowY: "auto",
-        }}
-      >
-        {loading ? (
-          <div className="flex justify-center items-center h-full">
-            <div>Loading tasks...</div>
-          </div>
-        ) : error ? (
-          <div className="flex justify-center items-center h-full">
-            <div className="text-red-500">Error: {error}</div>
-          </div>
-        ) : tasks.length === 0 ? (
-          <NoTaskMessage />
-        ) : (
-          <div className="flex flex-col gap-4 ">
-            {tasks.map((task) => (
-              <div
-                onClick={() => handleSetActiveTask(task)}
-                key={task.id}
-                className="  shadow-md rounded-xl p-4 border border-gray-200 dark:border-gray-700 flex items-center gap-4 cursor-pointer"
+              <Calendar width={"20px"} />
+              <p
+                style={{
+                  fontSize: "16px",
+                }}
               >
-                <Row style={{ gap: "10px", width: "100%" }} align={"middle"}>
-                  {/* <div className="scale-150">
+                Tasks List{" "}
+                <span style={{ color: "grey" }}>({tasks.length} tasks)</span>
+              </p>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                alignItems: "center",
+                alignContent: "center",
+              }}
+            >
+              <div>
+                {isLoggedIn ? (
+                  <div
+                    onClick={() => setIsAddTaskOpen(true)}
+                    style={{
+                      width: "40px",
+                      height: "40px",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      backgroundColor: "#3b7be3",
+                      borderRadius: "20px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <Plus color="white" />
+                  </div>
+                ) : (
+                  ""
+                )}
+              </div>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    style={{
+                      width: "40px",
+                      height: "40px",
+                      borderRadius: "100px",
+                    }}
+                  >
+                    <Avatar>
+                      <AvatarFallback>
+                        <User className="avatar-icon" />
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent align="end">
+                  {isLoggedIn ? (
+                    <>
+                      <DropdownMenuItem
+                        onClick={() => navigate("/manage-tasks")}
+                      >
+                        <Settings className="menu-icon" />
+                        Manage Tasks
+                      </DropdownMenuItem>
+
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={handleLogout}
+                        className="logout-item"
+                      >
+                        <LogIn className="menu-icon" />
+                        Logout
+                      </DropdownMenuItem>
+                    </>
+                  ) : (
+                    <DropdownMenuItem onClick={() => navigate("/login")}>
+                      <LogIn className="menu-icon" />
+                      Login
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </CardTitle>
+        </CardHeader>
+
+        <CardContent
+          style={{
+            height: "70vh",
+            overflowY: "auto",
+          }}
+        >
+          {loading ? (
+            <div className="flex justify-center items-center h-full">
+              <div>Loading tasks...</div>
+            </div>
+          ) : error ? (
+            <div className="flex justify-center items-center h-full">
+              <div className="text-red-500">Error: {error}</div>
+            </div>
+          ) : tasks.length === 0 ? (
+            <NoTaskMessage />
+          ) : (
+            <div className="flex flex-col gap-4 ">
+              {tasks.map((task) => (
+                <div
+                  onClick={() => handleSetActiveTask(task)}
+                  key={task.id}
+                  className="  shadow-md rounded-xl p-4 border border-gray-200 dark:border-gray-700 flex items-center gap-4 cursor-pointer"
+                >
+                  <Row style={{ gap: "10px", width: "100%" }} align={"middle"}>
+                    {/* <div className="scale-150">
                     <Checkbox
                       checked={task.status === "completed"}
                       className="custom-checkbox"
                     />
                   </div> */}
 
-                  <div
-                    style={{
-                      fontSize: "30px",
-                      height: "60px",
-                      width: "60px",
-                      display: "flex",
-                      alignContent: "center",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      justifyItems: "center",
-                      borderRadius: "15px",
-                    }}
-                  >
-                    {task.iconName}
-                  </div>
-                  <Col
-                    style={{
-                      flex: 1,
-                    }}
-                  >
                     <div
                       style={{
+                        fontSize: "30px",
+                        height: "60px",
+                        width: "60px",
                         display: "flex",
-                        justifyContent: "space-between",
-                        marginBottom: "2px",
-                        fontSize: "20px",
+                        alignContent: "center",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        justifyItems: "center",
+                        borderRadius: "15px",
                       }}
                     >
-                      {task.title}
-
+                      {task.iconName}
+                    </div>
+                    <Col
+                      style={{
+                        flex: 1,
+                      }}
+                    >
                       <div
                         style={{
                           display: "flex",
-                          gap: "8px",
-                          alignItems: "center",
+                          justifyContent: "space-between",
+                          marginBottom: "2px",
+                          fontSize: "20px",
                         }}
                       >
-                        {activeTask?.id === task.id && (
-                          <span className="blinking-dot"></span>
-                        )}
+                        {task.title}
 
-                        {/* Complete Task Button */}
                         <div
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleCompleteTask(task);
-                          }}
                           style={{
-                            padding: "6px",
-                            backgroundColor: "#52c41a",
-                            border: "1px solid #444444",
-                            borderRadius: "8px",
-                            cursor: "pointer",
                             display: "flex",
+                            gap: "8px",
                             alignItems: "center",
-                            justifyContent: "center",
                           }}
-                          title="Complete Task"
                         >
-                          <CheckCircle size={16} color="white" />
+                          {activeTask?.id === task.id && (
+                            <span className="blinking-dot"></span>
+                          )}
+
+                          {/* Complete Task Button */}
+                          <div
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleCompleteTask(task);
+                            }}
+                            style={{
+                              padding: "6px",
+                              backgroundColor: "#52c41a",
+                              border: "1px solid #444444",
+                              borderRadius: "8px",
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                            title="Complete Task"
+                          >
+                            <CheckCircle size={16} color="white" />
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <Row justify={"space-between"} align={"middle"}>
-                      <div>{task.description}</div>
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: "10px",
-                          alignItems: "center",
-                        }}
-                      >
-                        <span
+                      <Row justify={"space-between"} align={"middle"}>
+                        <div>{task.description}</div>
+                        <div
                           style={{
-                            backgroundColor: "#2d3748",
-                            padding: "2px 8px",
-                            borderRadius: "8px",
-                            fontSize: "12px",
-                            color: "#a0a0a0",
+                            display: "flex",
+                            gap: "10px",
+                            alignItems: "center",
                           }}
                         >
-                          {formatTime(task.startTime)} -{" "}
-                          {formatTime(task.endTime)}
-                        </span>
-                        <span
-                          style={{
-                            backgroundColor: "#4a5568",
-                            padding: "2px 8px",
-                            borderRadius: "8px",
-                            fontSize: "12px",
-                            color: "#cbd5e0",
-                          }}
-                        >
-                          {formatTimeUtil(
-                            calculateTaskDuration(task.startTime, task.endTime)
-                          )}
-                        </span>
-                      </div>
-                    </Row>
-                  </Col>
+                          <span
+                            style={{
+                              backgroundColor: "#2d3748",
+                              padding: "2px 8px",
+                              borderRadius: "8px",
+                              fontSize: "12px",
+                              color: "#a0a0a0",
+                            }}
+                          >
+                            {formatTime(task.startTime)} -{" "}
+                            {formatTime(task.endTime)}
+                          </span>
+                          <span
+                            style={{
+                              backgroundColor: "#4a5568",
+                              padding: "2px 8px",
+                              borderRadius: "8px",
+                              fontSize: "12px",
+                              color: "#cbd5e0",
+                            }}
+                          >
+                            {formatTimeUtil(
+                              calculateTaskDuration(
+                                task.startTime,
+                                task.endTime
+                              )
+                            )}
+                          </span>
+                        </div>
+                      </Row>
+                    </Col>
 
-                  {/* Set Active Task Button */}
+                    {/* Set Active Task Button */}
 
-                  {/* <div
+                    {/* <div
                     onClick={() => handleSetActiveTask(task)}
                     style={{
                       padding: "10px",
@@ -407,28 +417,29 @@ export const UpcomingTasksPanel = () => {
                   >
                     <PlayCircle size={10} color="white" />
                   </div> */}
-                </Row>
-              </div>
-            ))}
-          </div>
-        )}
-        <AddTaskDialog
-          open={isAddTaskOpen}
-          onOpenChange={setIsAddTaskOpen}
-          mode="add"
-        />
+                  </Row>
+                </div>
+              ))}
+            </div>
+          )}
+          <AddTaskDialog
+            open={isAddTaskOpen}
+            onOpenChange={setIsAddTaskOpen}
+            mode="add"
+          />
 
-        {selectedTask && (
-          <>
-            <LogHoursDialog
-              isOpen={isLogHoursOpen}
-              onClose={() => setIsLogHoursOpen(false)}
-              task={selectedTask}
-              executionDate={format(selectedDate, "yyyy-MM-dd")}
-            />
-          </>
-        )}
-      </CardContent>
-    </Card>
+          {selectedTask && (
+            <>
+              <LogHoursDialog
+                isOpen={isLogHoursOpen}
+                onClose={() => setIsLogHoursOpen(false)}
+                task={selectedTask}
+                executionDate={format(selectedDate, "yyyy-MM-dd")}
+              />
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </>
   );
 };

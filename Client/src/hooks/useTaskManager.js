@@ -22,7 +22,7 @@ export const useTaskManager = () => {
   const { toast } = useToast();
 
   // Fetch tasks with error handling
-  const fetchTasks = useCallback(async (date, statusFilter = "All") => {
+  const fetchTasks = useCallback(async (date, statusFilter = "Pending") => {
     try {
       await fetchTasksForUserAsync(date, statusFilter);
     } catch (error) {

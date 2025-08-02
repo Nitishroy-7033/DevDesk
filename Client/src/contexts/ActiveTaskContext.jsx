@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { taskAPI } from "@/lib/api";
 
 const ActiveTaskContext = createContext(undefined);
 
@@ -19,7 +20,7 @@ export const ActiveTaskProvider = ({ children }) => {
   const [availableTasks, setAvailableTasks] = useState([]);
   const [lastUpdateTime, setLastUpdateTime] = useState(Date.now());
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
-  
+
   // Enhanced completion tracking state
   const [taskStartTime, setTaskStartTime] = useState(null);
   const [taskEndTime, setTaskEndTime] = useState(null);
@@ -46,7 +47,11 @@ export const ActiveTaskProvider = ({ children }) => {
           const timeDiff = Math.floor((now - timerState.lastUpdateTime) / 1000);
 
           setTotalTime(timerState.totalTime);
-          setIsCompleted(timerState.isCompleted);
+
+          // Only restore completion state if we have a saved active task
+          if (savedActiveTask) {
+            setIsCompleted(timerState.isCompleted);
+          }
 
           if (timerState.isRunning && !timerState.isCompleted) {
             // Calculate how much time has passed since last update
@@ -203,14 +208,20 @@ export const ActiveTaskProvider = ({ children }) => {
     setTimeRemaining(duration);
     setIsCompleted(false);
     setIsRunning(false);
+    setTaskStartTime(null); // Reset start time for new task
+    setTaskEndTime(null); // Reset end time for new task
+    setCompletionMethod(null); // Reset completion method
   };
 
-  // Set available tasks and auto-select first one if no active task
+  // Set available tasks and auto-select first non-completed task if no active task
   const setAvailableTasksAndAutoSelect = (tasks) => {
     setAvailableTasks(tasks);
 
-    // Auto-select first task if no active task is selected and tasks are available
+    // Auto-select first non-completed task if no active task is selected and tasks are available
     if (!activeTask && tasks.length > 0) {
+      // Try to find the first task that's not completed
+      // Since we don't have direct status on tasks, we'll just pick the first task
+      // and let the UpcomingTasksPanel filter handle completed tasks
       const firstTask = tasks[0];
       setActiveTaskFromUpcoming(firstTask);
     }
@@ -310,6 +321,9 @@ export const ActiveTaskProvider = ({ children }) => {
   const startTimer = () => {
     if (activeTask && timeRemaining > 0) {
       setIsRunning(true);
+      if (!taskStartTime) {
+        setTaskStartTime(new Date().toISOString());
+      }
     }
   };
 
@@ -317,10 +331,41 @@ export const ActiveTaskProvider = ({ children }) => {
     setIsRunning(false);
   };
 
-  const completeTask = () => {
+  const completeTask = async () => {
+    if (!activeTask) return;
+
     setIsRunning(false);
     setIsCompleted(true);
-    // Keep the completed state in storage for persistence
+
+    try {
+      const startTime = taskStartTime ? new Date(taskStartTime) : new Date();
+      const endTime = new Date();
+      const actualDurationMinutes = Math.round(
+        (endTime - startTime) / (1000 * 60)
+      );
+
+      await submitTaskCompletion({
+        actualStartTime: startTime.toISOString(),
+        actualEndTime: endTime.toISOString(),
+        actualDurationMinutes,
+      });
+
+      // Show success message
+      const token = localStorage.getItem("token");
+      if (token) {
+        console.log("Task completed successfully!");
+      } else {
+        console.log("Demo task completed! Login to save your real tasks.");
+      }
+
+      // Optionally clear the task after a delay
+      setTimeout(() => {
+        clearActiveTask();
+      }, 2000);
+    } catch (error) {
+      console.error("Error completing task:", error);
+      // Still mark as completed locally even if API fails
+    }
   };
 
   const resetTask = () => {
@@ -355,64 +400,22 @@ export const ActiveTaskProvider = ({ children }) => {
   // Enhanced completion tracking methods
   const handleCountdownComplete = async () => {
     if (!activeTask) return;
-    
+
     try {
-      const completionData = calculateCompletionData();
+      const startTime = taskStartTime ? new Date(taskStartTime) : new Date();
+      const endTime = new Date();
+      const actualDurationMinutes = Math.round(
+        (endTime - startTime) / (1000 * 60)
+      );
+
       await submitTaskCompletion({
-        ...completionData,
-        completionMethod: "countdown",
-        timerCompletedNaturally: true
+        actualStartTime: startTime.toISOString(),
+        actualEndTime: endTime.toISOString(),
+        actualDurationMinutes,
       });
     } catch (error) {
       console.error("Error auto-completing task:", error);
     }
-  };
-
-  const calculateCompletionData = () => {
-    if (!activeTask || !taskStartTime) return {};
-
-    const startTime = new Date(taskStartTime);
-    const endTime = taskEndTime ? new Date(taskEndTime) : new Date();
-    const actualDurationMinutes = Math.round((endTime - startTime) / (1000 * 60));
-    
-    // Parse expected duration from task
-    const expectedDurationMinutes = activeTask.expectedDurationMinutes || 
-      calculateDuration(activeTask.startTime, activeTask.endTime) / 60;
-    
-    // Parse scheduled times
-    const [startHour, startMinute] = activeTask.startTime.split(':').map(Number);
-    const [endHour, endMinute] = activeTask.endTime.split(':').map(Number);
-    
-    const scheduledStart = new Date(startTime);
-    scheduledStart.setHours(startHour, startMinute, 0, 0);
-    
-    const scheduledEnd = new Date(startTime);
-    scheduledEnd.setHours(endHour, endMinute, 0, 0);
-    
-    // Calculate variances
-    const startVarianceMinutes = Math.round((startTime - scheduledStart) / (1000 * 60));
-    const endVarianceMinutes = Math.round((endTime - scheduledEnd) / (1000 * 60));
-    const durationVarianceMinutes = expectedDurationMinutes - actualDurationMinutes;
-    
-    return {
-      actualStartTime: startTime.toISOString(),
-      actualEndTime: endTime.toISOString(),
-      actualDurationMinutes,
-      expectedDurationMinutes,
-      startVarianceMinutes,
-      endVarianceMinutes,
-      durationVarianceMinutes,
-      startedEarly: startVarianceMinutes < -5,
-      startedLate: startVarianceMinutes > 5,
-      startedOnTime: Math.abs(startVarianceMinutes) <= 5,
-      completedEarly: endVarianceMinutes < -5,
-      completedLate: endVarianceMinutes > 5,
-      completedOnTime: Math.abs(endVarianceMinutes) <= 5,
-      completedLessThanExpected: durationVarianceMinutes > 5,
-      completedMoreThanExpected: durationVarianceMinutes < -5,
-      completedExactlyAsExpected: Math.abs(durationVarianceMinutes) <= 5,
-      efficiencyScore: expectedDurationMinutes > 0 ? expectedDurationMinutes / actualDurationMinutes : 1.0
-    };
   };
 
   const submitTaskCompletion = async (completionData) => {
@@ -420,32 +423,22 @@ export const ActiveTaskProvider = ({ children }) => {
 
     const completionRequest = {
       taskId: activeTask.id,
-      executionDate: new Date().toISOString().split('T')[0],
+      executionDate: new Date().toISOString().split("T")[0],
       completionPercentage: 100,
-      notes: '',
+      notes: "",
       ...completionData,
-      wasUsingTimer: true,
-      timerDurationMinutes: Math.round(totalTime / 60),
-      interruptionCount: 0,
-      interruptionReasons: [],
-      completionQuality: 'good',
-      productivityLevel: 'normal'
     };
 
-    const response = await fetch('/api/task/complete', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      },
-      body: JSON.stringify(completionRequest)
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to complete task');
+    // Check if user is logged in
+    const token = localStorage.getItem("token");
+    if (!token) {
+      // Demo mode - simulate completion
+      console.log("Demo mode: Simulating task completion for timer");
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      return { success: true, message: "Demo task completed!" };
     }
 
-    return response.json();
+    return await taskAPI.completeTask(completionRequest);
   };
 
   const value = {
@@ -471,7 +464,6 @@ export const ActiveTaskProvider = ({ children }) => {
     toggleAutoSave,
     getNextTask,
     moveToNextTask,
-    calculateCompletionData,
     submitTaskCompletion,
     hasNextTask: !!getNextTask(),
     progress:

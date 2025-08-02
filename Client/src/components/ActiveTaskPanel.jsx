@@ -39,6 +39,8 @@ export const ActiveTaskPanel = ({
     totalTime,
     isCompleted,
     autoSaveEnabled,
+    taskStartTime,
+    taskEndTime,
     startTimer,
     pauseTimer,
     completeTask,
