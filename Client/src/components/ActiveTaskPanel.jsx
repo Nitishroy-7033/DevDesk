@@ -26,6 +26,7 @@ import { Col, Progress, Row } from "antd";
 import FlipClockCountdown from "@leenguyen/react-flip-clock-countdown";
 import { useActiveTask } from "@/contexts/ActiveTaskContext";
 import { formatTime as formatTimeUtil } from "@/utils/timeUtils";
+import EnhancedCompleteTaskDialog from "./EnhancedCompleteTaskDialog";
 
 export const ActiveTaskPanel = ({
   isFullscreen = false,
@@ -48,11 +49,22 @@ export const ActiveTaskPanel = ({
     progress,
   } = useActiveTask();
 
+  const [isCompleteDialogOpen, setIsCompleteDialogOpen] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+
   const handleStart = () => startTimer();
   const handlePause = () => pauseTimer();
-  const handleComplete = () => completeTask();
+  const handleComplete = () => {
+    setIsCompleteDialogOpen(true);
+  };
   const handleReset = () => resetTaskWithConfirmation();
   const handleNextTask = () => moveToNextTask();
+
+  const handleTaskCompleted = () => {
+    setIsCompleteDialogOpen(false);
+    setShowConfetti(true);
+    // The completion will be handled by the dialog
+  };
 
   const formatTime = (timeStr) => {
     // Remove the :00 seconds using regex
@@ -79,7 +91,6 @@ export const ActiveTaskPanel = ({
         style={{
           padding: "20px",
           height: isFullscreen ? "100vh" : "none",
-        
         }}
       >
         <Row justify={"space-between"} align={"middle"}>
@@ -91,7 +102,7 @@ export const ActiveTaskPanel = ({
             style={{
               display: "flex",
               alignItems: "center",
-             
+
               gap: "10px",
             }}
           >
@@ -128,7 +139,6 @@ export const ActiveTaskPanel = ({
             display: "flex",
             flexDirection: "column",
             textAlign: "center",
-           
           }}
         >
           <div style={{ fontSize: "18px", color: "#666" }}>
@@ -148,7 +158,7 @@ export const ActiveTaskPanel = ({
       style={{
         padding: "20px",
         height: isFullscreen ? "100vh" : "auto",
-        
+
         // overflowy:"hidden"
       }}
     >
@@ -224,7 +234,6 @@ export const ActiveTaskPanel = ({
           <Row
             style={{
               width: isFullscreen ? "40%" : "70%",
-              
             }}
           >
             <Progress
@@ -251,7 +260,6 @@ export const ActiveTaskPanel = ({
               borderRadius: "15px",
               maxWidth: "80%",
               textAlign: "center",
-              
             }}
           >
             {activeTask.iconName} # {activeTask.title}
@@ -361,6 +369,24 @@ export const ActiveTaskPanel = ({
           </div>
         </Row>
       </Col>
+
+      {/* Enhanced Complete Task Dialog */}
+      {activeTask && (
+        <EnhancedCompleteTaskDialog
+          isOpen={isCompleteDialogOpen}
+          onClose={() => setIsCompleteDialogOpen(false)}
+          task={activeTask}
+          executionDate={new Date().toISOString().split("T")[0]}
+          onTaskCompleted={handleTaskCompleted}
+          completionMethod="manual"
+          timerData={{
+            startTime: taskStartTime,
+            endTime: new Date().toISOString(),
+            duration: Math.round((totalTime - timeRemaining) / 60),
+            wasUsingTimer: true,
+          }}
+        />
+      )}
     </Card>
   );
 };

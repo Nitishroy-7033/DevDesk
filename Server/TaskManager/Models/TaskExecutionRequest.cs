@@ -16,8 +16,9 @@ public class TaskCompletionRequest
 {
     public string TaskId { get; set; } = string.Empty;
     public DateTime ExecutionDate { get; set; }
+    public DateTime? ActualStartTime { get; set; }
+    public DateTime? ActualEndTime { get; set; }
     public int ActualDurationMinutes { get; set; }
     public int CompletionPercentage { get; set; } = 100;
     public string? Notes { get; set; }
-    public bool IsManuallyMarked { get; set; } = false;
 }

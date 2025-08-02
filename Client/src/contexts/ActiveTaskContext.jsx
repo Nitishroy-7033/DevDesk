@@ -19,6 +19,11 @@ export const ActiveTaskProvider = ({ children }) => {
   const [availableTasks, setAvailableTasks] = useState([]);
   const [lastUpdateTime, setLastUpdateTime] = useState(Date.now());
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
+  
+  // Enhanced completion tracking state
+  const [taskStartTime, setTaskStartTime] = useState(null);
+  const [taskEndTime, setTaskEndTime] = useState(null);
+  const [completionMethod, setCompletionMethod] = useState(null); // "countdown" or "manual"
 
   // Load state from localStorage on component mount
   useEffect(() => {
@@ -289,6 +294,10 @@ export const ActiveTaskProvider = ({ children }) => {
           if (prev <= 1) {
             setIsRunning(false);
             setIsCompleted(true);
+            setTaskEndTime(new Date().toISOString());
+            setCompletionMethod("countdown");
+            // Auto-complete task when countdown finishes
+            handleCountdownComplete();
             return 0;
           }
           return prev - 1;
@@ -343,6 +352,102 @@ export const ActiveTaskProvider = ({ children }) => {
     clearPersistedState(); // Clear all persisted data
   };
 
+  // Enhanced completion tracking methods
+  const handleCountdownComplete = async () => {
+    if (!activeTask) return;
+    
+    try {
+      const completionData = calculateCompletionData();
+      await submitTaskCompletion({
+        ...completionData,
+        completionMethod: "countdown",
+        timerCompletedNaturally: true
+      });
+    } catch (error) {
+      console.error("Error auto-completing task:", error);
+    }
+  };
+
+  const calculateCompletionData = () => {
+    if (!activeTask || !taskStartTime) return {};
+
+    const startTime = new Date(taskStartTime);
+    const endTime = taskEndTime ? new Date(taskEndTime) : new Date();
+    const actualDurationMinutes = Math.round((endTime - startTime) / (1000 * 60));
+    
+    // Parse expected duration from task
+    const expectedDurationMinutes = activeTask.expectedDurationMinutes || 
+      calculateDuration(activeTask.startTime, activeTask.endTime) / 60;
+    
+    // Parse scheduled times
+    const [startHour, startMinute] = activeTask.startTime.split(':').map(Number);
+    const [endHour, endMinute] = activeTask.endTime.split(':').map(Number);
+    
+    const scheduledStart = new Date(startTime);
+    scheduledStart.setHours(startHour, startMinute, 0, 0);
+    
+    const scheduledEnd = new Date(startTime);
+    scheduledEnd.setHours(endHour, endMinute, 0, 0);
+    
+    // Calculate variances
+    const startVarianceMinutes = Math.round((startTime - scheduledStart) / (1000 * 60));
+    const endVarianceMinutes = Math.round((endTime - scheduledEnd) / (1000 * 60));
+    const durationVarianceMinutes = expectedDurationMinutes - actualDurationMinutes;
+    
+    return {
+      actualStartTime: startTime.toISOString(),
+      actualEndTime: endTime.toISOString(),
+      actualDurationMinutes,
+      expectedDurationMinutes,
+      startVarianceMinutes,
+      endVarianceMinutes,
+      durationVarianceMinutes,
+      startedEarly: startVarianceMinutes < -5,
+      startedLate: startVarianceMinutes > 5,
+      startedOnTime: Math.abs(startVarianceMinutes) <= 5,
+      completedEarly: endVarianceMinutes < -5,
+      completedLate: endVarianceMinutes > 5,
+      completedOnTime: Math.abs(endVarianceMinutes) <= 5,
+      completedLessThanExpected: durationVarianceMinutes > 5,
+      completedMoreThanExpected: durationVarianceMinutes < -5,
+      completedExactlyAsExpected: Math.abs(durationVarianceMinutes) <= 5,
+      efficiencyScore: expectedDurationMinutes > 0 ? expectedDurationMinutes / actualDurationMinutes : 1.0
+    };
+  };
+
+  const submitTaskCompletion = async (completionData) => {
+    if (!activeTask) return;
+
+    const completionRequest = {
+      taskId: activeTask.id,
+      executionDate: new Date().toISOString().split('T')[0],
+      completionPercentage: 100,
+      notes: '',
+      ...completionData,
+      wasUsingTimer: true,
+      timerDurationMinutes: Math.round(totalTime / 60),
+      interruptionCount: 0,
+      interruptionReasons: [],
+      completionQuality: 'good',
+      productivityLevel: 'normal'
+    };
+
+    const response = await fetch('/api/task/complete', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify(completionRequest)
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to complete task');
+    }
+
+    return response.json();
+  };
+
   const value = {
     activeTask,
     isRunning,
@@ -351,6 +456,9 @@ export const ActiveTaskProvider = ({ children }) => {
     isCompleted,
     availableTasks,
     autoSaveEnabled,
+    taskStartTime,
+    taskEndTime,
+    completionMethod,
     setActiveTaskFromUpcoming,
     setAvailableTasksAndAutoSelect,
     startTimer,
@@ -363,6 +471,8 @@ export const ActiveTaskProvider = ({ children }) => {
     toggleAutoSave,
     getNextTask,
     moveToNextTask,
+    calculateCompletionData,
+    submitTaskCompletion,
     hasNextTask: !!getNextTask(),
     progress:
       totalTime > 0 ? ((totalTime - timeRemaining) / totalTime) * 100 : 0,

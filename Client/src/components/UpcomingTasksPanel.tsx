@@ -21,7 +21,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format, addDays, subDays, isToday } from "date-fns";
 import { AddTaskDialog } from "../components/AddTaskDialog.jsx";
 import LogHoursDialog from "../components/LogHoursDialog.jsx";
-import CompleteTaskDialog from "../components/CompleteTaskDialog.jsx";
 
 import {
   DropdownMenu,
@@ -47,6 +46,7 @@ import { useTodo } from "@/contexts/TodoContext";
 import { useTaskManager } from "@/hooks/useTaskManager";
 import { useActiveTask } from "@/contexts/ActiveTaskContext";
 import { calculateTaskDuration, formatTime } from "@/utils/timeUtils";
+import { taskAPI } from "@/lib/api";
 interface Task {
   id: string;
   title: string;
@@ -71,7 +71,6 @@ export const UpcomingTasksPanel = () => {
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [isLogHoursOpen, setIsLogHoursOpen] = useState(false);
-  const [isCompleteTaskOpen, setIsCompleteTaskOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState("All");
 
   const handleLogout = () => {
@@ -86,18 +85,38 @@ export const UpcomingTasksPanel = () => {
     setIsLogHoursOpen(true);
   };
 
-  const handleCompleteTask = (task) => {
-    setSelectedTask(task);
-    setIsCompleteTaskOpen(true);
+  const handleCompleteTask = async (task) => {
+    try {
+      const now = new Date();
+      const completionRequest = {
+        taskId: task.id,
+        executionDate: format(selectedDate, "yyyy-MM-dd"),
+        completionPercentage: 100,
+        notes: "",
+        actualStartTime: now.toISOString(),
+        actualEndTime: now.toISOString(),
+        actualDurationMinutes: task.expectedDurationMinutes || 0,
+      };
+
+      console.log("Sending completion request:", completionRequest);
+
+      // Use the centralized API method
+      const result = await taskAPI.completeTask(completionRequest);
+      console.log("Task completion response:", result);
+
+      // Refresh the tasks list after completion
+      await fetchTasks([]);
+
+      // Show success message
+      alert("Task completed successfully!");
+    } catch (error) {
+      console.error("Error completing task:", error);
+      alert(`Failed to complete task: ${error.message}`);
+    }
   };
 
   const handleSetActiveTask = (task) => {
     setActiveTaskFromUpcoming(task);
-  };
-
-  const handleTaskCompleted = (completedTask) => {
-    // Refresh the tasks list after completion
-    getUpcomingTask();
   };
 
   const getUpcomingTask = async () => {
@@ -154,8 +173,6 @@ export const UpcomingTasksPanel = () => {
               Tasks List{" "}
               <span style={{ color: "grey" }}>({tasks.length} tasks)</span>
             </p>
-
-           
           </div>
           <div
             style={{
@@ -165,7 +182,6 @@ export const UpcomingTasksPanel = () => {
               alignContent: "center",
             }}
           >
-            
             <div>
               {isLoggedIn ? (
                 <div
@@ -174,8 +190,8 @@ export const UpcomingTasksPanel = () => {
                     width: "40px",
                     height: "40px",
                     display: "flex",
-                   justifyContent: "center",
-                   alignItems: "center",
+                    justifyContent: "center",
+                    alignItems: "center",
                     backgroundColor: "#3b7be3",
                     borderRadius: "20px",
                     cursor: "pointer",
@@ -212,7 +228,7 @@ export const UpcomingTasksPanel = () => {
                       <Settings className="menu-icon" />
                       Manage Tasks
                     </DropdownMenuItem>
-                   
+
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={handleLogout}
@@ -296,10 +312,37 @@ export const UpcomingTasksPanel = () => {
                     >
                       {task.title}
 
-                      <div>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "8px",
+                          alignItems: "center",
+                        }}
+                      >
                         {activeTask?.id === task.id && (
                           <span className="blinking-dot"></span>
                         )}
+
+                        {/* Complete Task Button */}
+                        <div
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCompleteTask(task);
+                          }}
+                          style={{
+                            padding: "6px",
+                            backgroundColor: "#52c41a",
+                            border: "1px solid #444444",
+                            borderRadius: "8px",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                          title="Complete Task"
+                        >
+                          <CheckCircle size={16} color="white" />
+                        </div>
                       </div>
                     </div>
 
@@ -382,14 +425,6 @@ export const UpcomingTasksPanel = () => {
               onClose={() => setIsLogHoursOpen(false)}
               task={selectedTask}
               executionDate={format(selectedDate, "yyyy-MM-dd")}
-            />
-
-            <CompleteTaskDialog
-              isOpen={isCompleteTaskOpen}
-              onClose={() => setIsCompleteTaskOpen(false)}
-              task={selectedTask}
-              executionDate={format(selectedDate, "yyyy-MM-dd")}
-              onTaskCompleted={handleTaskCompleted}
             />
           </>
         )}

@@ -178,7 +178,7 @@ public class TaskService : ITaskService
         {
             var targetDate = query.Date ?? DateTime.Today;
             var taskIds = allTasks.Select(t => t.Id).ToList();
-            
+
             // Get execution records for these tasks on the target date
             var executions = new List<TaskExecutionRecord>();
             foreach (var taskId in taskIds)
@@ -203,8 +203,8 @@ public class TaskService : ITaskService
                 case "pending":
                     // Tasks without execution records or with NotStarted status
                     var executedTaskIds = new HashSet<string>(executions.Select(e => e.TaskId));
-                    filteredTaskIds = new HashSet<string>(allTasks.Where(t => 
-                        !executedTaskIds.Contains(t.Id) || 
+                    filteredTaskIds = new HashSet<string>(allTasks.Where(t =>
+                        !executedTaskIds.Contains(t.Id) ||
                         executions.Any(e => e.TaskId == t.Id && e.Status == "NotStarted")
                     ).Select(t => t.Id));
                     break;
@@ -318,15 +318,22 @@ public class TaskService : ITaskService
 
     public async Task<TaskExecutionRecord> CompleteTaskAsync(string userId, TaskCompletionRequest request)
     {
+        // Validate input parameters
+        if (string.IsNullOrEmpty(request.TaskId))
+            throw new ArgumentException("TaskId cannot be null or empty");
+
+        if (string.IsNullOrEmpty(userId))
+            throw new ArgumentException("UserId cannot be null or empty");
+
         var execution = await _taskRepository.GetTaskExecutionAsync(request.TaskId, userId, request.ExecutionDate);
+        var task = await _taskRepository.GetTaskByIdAsync(request.TaskId);
+
+        if (task == null || task.UserId != userId)
+            throw new ArgumentException("Task not found or access denied");
 
         if (execution == null)
         {
             // Create new execution record
-            var task = await _taskRepository.GetTaskByIdAsync(request.TaskId);
-            if (task == null || task.UserId != userId)
-                throw new ArgumentException("Task not found or access denied");
-
             execution = new TaskExecutionRecord
             {
                 TaskId = request.TaskId,
@@ -335,21 +342,16 @@ public class TaskService : ITaskService
                 ExpectedDurationMinutes = task.ExpectedDurationMinutes
             };
         }
+
+        // Update execution with simple completion data
         execution.Status = "Completed";
-        execution.ActualEndTime = DateTime.Now;
+        execution.ActualStartTime = request.ActualStartTime ?? execution.ActualStartTime ?? DateTime.Now;
+        execution.ActualEndTime = request.ActualEndTime ?? DateTime.Now;
         execution.ActualDurationMinutes = request.ActualDurationMinutes;
         execution.CompletionPercentage = request.CompletionPercentage;
         execution.Notes = request.Notes;
-        execution.IsManuallyMarked = request.IsManuallyMarked;
 
-        if (execution.ActualStartTime.HasValue && execution.ActualEndTime.HasValue)
-        {
-            var actualDuration = (execution.ActualEndTime.Value - execution.ActualStartTime.Value).TotalMinutes;
-            execution.EfficiencyScore = execution.ExpectedDurationMinutes > 0
-                ? actualDuration / execution.ExpectedDurationMinutes
-                : 1.0;
-        }
-
+        // Save or update execution record
         if (string.IsNullOrEmpty(execution.Id))
         {
             await _taskRepository.CreateTaskExecution(execution);
@@ -386,7 +388,6 @@ public class TaskService : ITaskService
                 break;
             case "resume":
                 execution.Status = "InProgress";
-                execution.InterruptionCount++;
                 break;
             case "skip":
                 execution.Status = "Skipped";
@@ -603,7 +604,7 @@ public class TaskService : ITaskService
 
         var completedExecutions = executions.Where(e => e.Status == "Completed" && e.ActualDurationMinutes > 0).ToList();
         response.EfficiencyScore = completedExecutions.Any()
-            ? completedExecutions.Average(e => e.EfficiencyScore)
+            ? completedExecutions.Average(e => e.ExpectedDurationMinutes > 0 ? (double)e.ExpectedDurationMinutes / e.ActualDurationMinutes : 1.0)
             : 0;
 
         // Consistency metrics
@@ -615,7 +616,9 @@ public class TaskService : ITaskService
                 TasksCompleted = g.Count(e => e.Status == "Completed"),
                 CompletionRate = g.Count() > 0 ? (double)g.Count(e => e.Status == "Completed") / g.Count() * 100 : 0,
                 HoursLogged = g.Sum(e => e.ActualDurationMinutes) / 60.0,
-                EfficiencyScore = g.Where(e => e.EfficiencyScore > 0).DefaultIfEmpty().Average(e => e?.EfficiencyScore ?? 0)
+                EfficiencyScore = g.Where(e => e.ActualDurationMinutes > 0 && e.ExpectedDurationMinutes > 0)
+                    .DefaultIfEmpty()
+                    .Average(e => e?.ExpectedDurationMinutes > 0 ? (double)e.ExpectedDurationMinutes / e.ActualDurationMinutes : 1.0)
             }).ToList();
 
         response.DailyPerformances = dailyStats;
@@ -657,7 +660,9 @@ public class TaskService : ITaskService
             var completedTasks = executions.Count(e => e.Status == "Completed");
             var completionRate = (double)completedTasks / tasks.Count * 100;
             var totalHours = executions.Sum(e => e.ActualDurationMinutes) / 60.0;
-            var efficiencyScore = executions.Where(e => e.EfficiencyScore > 0).DefaultIfEmpty().Average(e => e?.EfficiencyScore ?? 0);
+            var efficiencyScore = executions.Where(e => e.ActualDurationMinutes > 0 && e.ExpectedDurationMinutes > 0)
+                .DefaultIfEmpty()
+                .Average(e => e?.ExpectedDurationMinutes > 0 ? (double)e.ExpectedDurationMinutes / e.ActualDurationMinutes : 1.0);
 
             var dailyActivity = executions.GroupBy(e => e.ExecutionDate.Date).Count();
 
@@ -721,7 +726,9 @@ public class TaskService : ITaskService
             {
                 Hour = g.Key,
                 TasksCompleted = g.Count(e => e.Status == "Completed"),
-                AverageEfficiency = g.Where(e => e.EfficiencyScore > 0).DefaultIfEmpty().Average(e => e?.EfficiencyScore ?? 0)
+                AverageEfficiency = g.Where(e => e.ActualDurationMinutes > 0 && e.ExpectedDurationMinutes > 0)
+                    .DefaultIfEmpty()
+                    .Average(e => e?.ExpectedDurationMinutes > 0 ? (double)e.ExpectedDurationMinutes / e.ActualDurationMinutes : 1.0)
             }).ToList();
 
         response.WeeklyDistribution = executions

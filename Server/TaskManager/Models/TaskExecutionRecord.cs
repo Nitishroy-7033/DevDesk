@@ -35,15 +35,9 @@ public class TaskExecutionRecord
 
     public string? Notes { get; set; } // User notes about the execution
 
-    public bool IsManuallyMarked { get; set; } = false; // If user manually marked as complete
-
     [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-
-    // Productivity metrics
-    public double EfficiencyScore { get; set; } = 0; // ActualTime vs ExpectedTime ratio
-    public int InterruptionCount { get; set; } = 0; // How many times task was paused/resumed
 }
