@@ -40,7 +40,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { Avatar, AvatarFallback } from "@radix-ui/react-avatar";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import NoTaskMessage from "../components/NoTaskMessage.jsx";
+import NoTaskMessage from "./Tasks/NoTaskMessage.jsx";
 import "./UpcomingTasksPanel.css";
 import { useTodo } from "@/contexts/TodoContext";
 import { useTaskManager } from "@/hooks/useTaskManager";
