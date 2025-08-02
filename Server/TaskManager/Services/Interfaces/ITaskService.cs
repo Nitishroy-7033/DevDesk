@@ -20,8 +20,6 @@ public interface ITaskService
 
     // Task execution and completion
     Task<TaskExecutionRecord> StartTaskAsync(string userId, string taskId, DateTime executionDate);
-    Task<TaskExecutionRecord> CompleteTaskAsync(string userId, TaskCompletionRequest request);
-    Task<TaskExecutionRecord> UpdateTaskExecutionAsync(string userId, TaskExecutionRequest request);
     Task<List<TaskExecutionRecord>> GetExecutionHistoryAsync(string userId, DateTime fromDate, DateTime toDate);
 
     // Analytics

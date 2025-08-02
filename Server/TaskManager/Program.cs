@@ -70,7 +70,9 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddSingleton(typeof(MongoDbContext<>));
 builder.Services.AddSingleton<AuthHandler>();
 builder.Services.AddTransient<IUserRepository, UserRepository>();
+builder.Services.AddTransient<ITaskCompleteRepository, TaskCompleteRepository>();
 builder.Services.AddTransient<IUserService, UserService>();
+builder.Services.AddTransient<ITaskCompleteService, TaskCompleteService>();
 builder.Services.AddTransient<IAuthService, AuthService>();
 builder.Services.AddTransient<ITaskRepository, TaskRepository>();
 builder.Services.AddTransient<ITaskService, TaskService>();
