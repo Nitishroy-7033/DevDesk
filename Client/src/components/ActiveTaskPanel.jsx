@@ -217,7 +217,12 @@ export const ActiveTaskPanel = ({
       <br />
       <Col
         style={{
+          height: "85%",
           alignContent: "center",
+          justifyContent: "center",
+          display: "flex",
+          flexDirection: "column",
+          textAlign: "center",
         }}
       >
         <Row
@@ -229,9 +234,6 @@ export const ActiveTaskPanel = ({
         >
           {formatTimeUtil(timeRemaining)}
         </Row>
-        {/* <FlipClockCountdown
-          to={new Date().getTime() + 24 * 3600 * 1000 + 5000}
-        /> */}
         <Row justify={"center"}>
           <Row
             style={{
@@ -267,18 +269,6 @@ export const ActiveTaskPanel = ({
             {activeTask.iconName} # {activeTask.title}
           </Row>
         </Row>
-        {/* <br />
-        <Row justify={"center"}>
-          <div
-            style={{
-              fontSize: "14px",
-              color: "#a0a0a0",
-              textAlign: "center",
-            }}
-          >
-            {activeTask.description}
-          </div>
-        </Row> */}
         <br />
         <Row justify={"center"} style={{ gap: "15px" }}>
           <div
@@ -321,7 +311,6 @@ export const ActiveTaskPanel = ({
         </Row>
         <br />
         <br />
-
         <Row
           justify={"center"}
           style={{
@@ -371,24 +360,6 @@ export const ActiveTaskPanel = ({
           </div>
         </Row>
       </Col>
-
-      {/* Enhanced Complete Task Dialog */}
-      {activeTask && (
-        <EnhancedCompleteTaskDialog
-          isOpen={isCompleteDialogOpen}
-          onClose={() => setIsCompleteDialogOpen(false)}
-          task={activeTask}
-          executionDate={new Date().toISOString().split("T")[0]}
-          onTaskCompleted={handleTaskCompleted}
-          completionMethod="manual"
-          timerData={{
-            startTime: taskStartTime,
-            endTime: new Date().toISOString(),
-            duration: Math.round((totalTime - timeRemaining) / 60),
-            wasUsingTimer: true,
-          }}
-        />
-      )}
     </Card>
   );
 };
