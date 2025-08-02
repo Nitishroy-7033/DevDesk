@@ -144,7 +144,7 @@ const EnhancedCompleteTaskDialog = ({
 
       // Use TodoContext to complete the task
       await completeTask(completionRequest);
-      
+
       onTaskCompleted?.(task);
       onClose();
     } catch (error) {

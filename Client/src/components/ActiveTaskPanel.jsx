@@ -165,221 +165,221 @@ export const ActiveTaskPanel = ({
           // overflowy:"hidden"
         }}
       >
-      <Row justify={"space-between"} align={"middle"}>
-        <CardTitle className={`header-title ${isFullscreen ? "large" : ""}`}>
-          Active Task
-        </CardTitle>
-        <div
-          className="header-actions"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-          }}
-        >
+        <Row justify={"space-between"} align={"middle"}>
+          <CardTitle className={`header-title ${isFullscreen ? "large" : ""}`}>
+            Active Task
+          </CardTitle>
           <div
-            onClick={toggleAutoSave}
+            className="header-actions"
             style={{
-              cursor: "pointer",
-              padding: "10px",
-              backgroundColor: autoSaveEnabled ? "#065f46" : "#7f1d1d",
-              border: `1px solid ${autoSaveEnabled ? "#10b981" : "#ef4444"}`,
-              borderRadius: "10px",
-              marginRight: "10px",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
             }}
-            title={
-              autoSaveEnabled
-                ? "Auto-save is ON - Click to disable"
-                : "Auto-save is OFF - Click to enable"
-            }
           >
-            {autoSaveEnabled ? (
-              <Save size={20} color="#10b981" />
-            ) : (
-              <SaveOff size={20} color="#ef4444" />
-            )}
-          </div>
-          {onToggleFullscreen && (
             <div
-              onClick={onToggleFullscreen}
+              onClick={toggleAutoSave}
               style={{
                 cursor: "pointer",
                 padding: "10px",
-                backgroundColor: "#323639",
-                border: "1px solid #444444",
+                backgroundColor: autoSaveEnabled ? "#065f46" : "#7f1d1d",
+                border: `1px solid ${autoSaveEnabled ? "#10b981" : "#ef4444"}`,
                 borderRadius: "10px",
+                marginRight: "10px",
               }}
+              title={
+                autoSaveEnabled
+                  ? "Auto-save is ON - Click to disable"
+                  : "Auto-save is OFF - Click to enable"
+              }
             >
-              <Maximize size={20} />
+              {autoSaveEnabled ? (
+                <Save size={20} color="#10b981" />
+              ) : (
+                <SaveOff size={20} color="#ef4444" />
+              )}
             </div>
-          )}
-        </div>
-      </Row>
-      <br />
-      <Col
-        style={{
-          height: "85%",
-          alignContent: "center",
-          justifyContent: "center",
-          display: "flex",
-          flexDirection: "column",
-          textAlign: "center",
-        }}
-      >
-        <Row
-          justify={"center"}
-          style={{
-            fontSize: isFullscreen ? "15rem" : "8rem",
-            fontWeight: "bolder",
-          }}
-        >
-          {formatTimeUtil(timeRemaining)}
-        </Row>
-        <Row justify={"center"}>
-          <Row
-            style={{
-              width: isFullscreen ? "40%" : "70%",
-            }}
-          >
-            <Progress
-              strokeLinecap="round"
-              size={"default"}
-              strokeWidth={"13px"}
-              strokeColor={"green"}
-              trailColor="#1e1e1e"
-              type="line"
-              showInfo={false}
-              percent={Math.round(progress)}
-            />
-          </Row>
+            {onToggleFullscreen && (
+              <div
+                onClick={onToggleFullscreen}
+                style={{
+                  cursor: "pointer",
+                  padding: "10px",
+                  backgroundColor: "#323639",
+                  border: "1px solid #444444",
+                  borderRadius: "10px",
+                }}
+              >
+                <Maximize size={20} />
+              </div>
+            )}
+          </div>
         </Row>
         <br />
-        <Row justify={"center"}>
+        <Col
+          style={{
+            height: "85%",
+            alignContent: "center",
+            justifyContent: "center",
+            display: "flex",
+            flexDirection: "column",
+            textAlign: "center",
+          }}
+        >
           <Row
             justify={"center"}
             style={{
-              backgroundColor: "#323639",
-              fontSize: "18px",
-              padding: "10px 20px",
-              border: "1px solid #444444",
-              borderRadius: "15px",
-              maxWidth: "80%",
-              textAlign: "center",
+              fontSize: isFullscreen ? "15rem" : "8rem",
+              fontWeight: "bolder",
             }}
           >
-            {activeTask.iconName} # {activeTask.title}
+            {formatTimeUtil(timeRemaining)}
           </Row>
-        </Row>
-        <br />
-        <Row justify={"center"} style={{ gap: "15px" }}>
-          <div
-            style={{
-              backgroundColor: "#2d3748",
-              padding: "8px 15px",
-              borderRadius: "10px",
-              fontSize: "14px",
-              color: "#cbd5e0",
-            }}
-          >
-            📅 {formatTime(activeTask.startTime)} -{" "}
-            {formatTime(activeTask.endTime)}
-          </div>
-          <div
-            style={{
-              backgroundColor: "#4a5568",
-              padding: "8px 15px",
-              borderRadius: "10px",
-              fontSize: "14px",
-              color: "#cbd5e0",
-            }}
-          >
-            ⏱️ {formatTimeUtil(totalTime)} total
-          </div>
-          {autoSaveEnabled && (
-            <div
+          <Row justify={"center"}>
+            <Row
               style={{
-                backgroundColor: "#065f46",
-                padding: "8px 15px",
-                borderRadius: "10px",
-                fontSize: "12px",
-                color: "#10b981",
-                border: "1px solid #10b981",
+                width: isFullscreen ? "40%" : "70%",
               }}
             >
-              💾 Auto-saved
+              <Progress
+                strokeLinecap="round"
+                size={"default"}
+                strokeWidth={"13px"}
+                strokeColor={"green"}
+                trailColor="#1e1e1e"
+                type="line"
+                showInfo={false}
+                percent={Math.round(progress)}
+              />
+            </Row>
+          </Row>
+          <br />
+          <Row justify={"center"}>
+            <Row
+              justify={"center"}
+              style={{
+                backgroundColor: "#323639",
+                fontSize: "18px",
+                padding: "10px 20px",
+                border: "1px solid #444444",
+                borderRadius: "15px",
+                maxWidth: "80%",
+                textAlign: "center",
+              }}
+            >
+              {activeTask.iconName} # {activeTask.title}
+            </Row>
+          </Row>
+          <br />
+          <Row justify={"center"} style={{ gap: "15px" }}>
+            <div
+              style={{
+                backgroundColor: "#2d3748",
+                padding: "8px 15px",
+                borderRadius: "10px",
+                fontSize: "14px",
+                color: "#cbd5e0",
+              }}
+            >
+              📅 {formatTime(activeTask.startTime)} -{" "}
+              {formatTime(activeTask.endTime)}
             </div>
-          )}
-        </Row>
-        <br />
-        <br />
-        <Row
-          justify={"center"}
-          style={{
-            gap: "20px",
-          }}
-        >
-          <div
-            onClick={handleReset}
+            <div
+              style={{
+                backgroundColor: "#4a5568",
+                padding: "8px 15px",
+                borderRadius: "10px",
+                fontSize: "14px",
+                color: "#cbd5e0",
+              }}
+            >
+              ⏱️ {formatTimeUtil(totalTime)} total
+            </div>
+            {autoSaveEnabled && (
+              <div
+                style={{
+                  backgroundColor: "#065f46",
+                  padding: "8px 15px",
+                  borderRadius: "10px",
+                  fontSize: "12px",
+                  color: "#10b981",
+                  border: "1px solid #10b981",
+                }}
+              >
+                💾 Auto-saved
+              </div>
+            )}
+          </Row>
+          <br />
+          <br />
+          <Row
+            justify={"center"}
             style={{
-              padding: "15px",
-              backgroundColor: "#323639",
-              border: "1px solid #444444",
-              borderRadius: "15px",
-              cursor: "pointer",
+              gap: "20px",
             }}
           >
-            <RefreshCcw />
-          </div>
-          <div
-            onClick={isRunning ? handlePause : handleStart}
-            style={{
-              padding: "15px",
-              backgroundColor: isRunning ? "#ff6b6b" : "#51cf66",
-              border: "1px solid #444444",
-              borderRadius: "15px",
-              display: "flex",
-              gap: "10px",
-              fontSize: "15px",
-              fontWeight: "bold",
-              cursor: "pointer",
-            }}
-          >
-            {isRunning ? <Pause /> : <Play />}
-            {isRunning ? "PAUSE" : "START"}
-          </div>
-          <div
-            onClick={handleComplete}
-            style={{
-              padding: "15px",
-              backgroundColor: "#4dabf7",
-              border: "1px solid #444444",
-              borderRadius: "15px",
-              cursor: "pointer",
-            }}
-          >
-            <CheckCircle />
-          </div>
-        </Row>
-      </Col>
-    </Card>
+            <div
+              onClick={handleReset}
+              style={{
+                padding: "15px",
+                backgroundColor: "#323639",
+                border: "1px solid #444444",
+                borderRadius: "15px",
+                cursor: "pointer",
+              }}
+            >
+              <RefreshCcw />
+            </div>
+            <div
+              onClick={isRunning ? handlePause : handleStart}
+              style={{
+                padding: "15px",
+                backgroundColor: isRunning ? "#ff6b6b" : "#51cf66",
+                border: "1px solid #444444",
+                borderRadius: "15px",
+                display: "flex",
+                gap: "10px",
+                fontSize: "15px",
+                fontWeight: "bold",
+                cursor: "pointer",
+              }}
+            >
+              {isRunning ? <Pause /> : <Play />}
+              {isRunning ? "PAUSE" : "START"}
+            </div>
+            <div
+              onClick={handleComplete}
+              style={{
+                padding: "15px",
+                backgroundColor: "#4dabf7",
+                border: "1px solid #444444",
+                borderRadius: "15px",
+                cursor: "pointer",
+              }}
+            >
+              <CheckCircle />
+            </div>
+          </Row>
+        </Col>
+      </Card>
 
-    {/* Enhanced Complete Task Dialog */}
-    {isCompleteDialogOpen && (
-      <EnhancedCompleteTaskDialog
-        isOpen={isCompleteDialogOpen}
-        onClose={() => setIsCompleteDialogOpen(false)}
-        task={activeTask}
-        executionDate={new Date().toISOString()}
-        onTaskCompleted={handleTaskCompleted}
-        completionMethod="manual"
-        timerData={{
-          startTime: taskStartTime,
-          endTime: taskEndTime,
-          duration: totalTime,
-          wasUsingTimer: isRunning || timeRemaining < totalTime
-        }}
-      />
-    )}
+      {/* Enhanced Complete Task Dialog */}
+      {isCompleteDialogOpen && (
+        <EnhancedCompleteTaskDialog
+          isOpen={isCompleteDialogOpen}
+          onClose={() => setIsCompleteDialogOpen(false)}
+          task={activeTask}
+          executionDate={new Date().toISOString()}
+          onTaskCompleted={handleTaskCompleted}
+          completionMethod="manual"
+          timerData={{
+            startTime: taskStartTime,
+            endTime: taskEndTime,
+            duration: totalTime,
+            wasUsingTimer: isRunning || timeRemaining < totalTime,
+          }}
+        />
+      )}
     </>
   );
 };

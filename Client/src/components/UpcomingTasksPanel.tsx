@@ -275,24 +275,35 @@ export const UpcomingTasksPanel = () => {
               {tasks
                 .sort((a, b) => {
                   // If both are completed or both are not completed, maintain original order
-                  if ((a.isCompleted || a.status === "completed") === (b.isCompleted || b.status === "completed")) {
+                  if (
+                    (a.isCompleted || a.status === "completed") ===
+                    (b.isCompleted || b.status === "completed")
+                  ) {
                     return 0;
                   }
                   // Put non-completed tasks first
-                  return (a.isCompleted || a.status === "completed") ? 1 : -1;
+                  return a.isCompleted || a.status === "completed" ? 1 : -1;
                 })
                 .map((task) => {
-                  const isTaskCompleted = task.isCompleted || task.status === "completed";
-                  
+                  const isTaskCompleted =
+                    task.isCompleted || task.status === "completed";
+
                   return (
                     <div
-                      onClick={() => !isTaskCompleted && handleSetActiveTask(task)}
+                      onClick={() =>
+                        !isTaskCompleted && handleSetActiveTask(task)
+                      }
                       key={task.id}
                       className={`shadow-md rounded-xl p-4 border border-gray-200 dark:border-gray-700 flex items-center gap-4 ${
-                        !isTaskCompleted ? 'cursor-pointer' : 'cursor-default opacity-70'
+                        !isTaskCompleted
+                          ? "cursor-pointer"
+                          : "cursor-default opacity-70"
                       }`}
                     >
-                      <Row style={{ gap: "10px", width: "100%" }} align={"middle"}>
+                      <Row
+                        style={{ gap: "10px", width: "100%" }}
+                        align={"middle"}
+                      >
                         <div
                           style={{
                             fontSize: "30px",
@@ -321,10 +332,14 @@ export const UpcomingTasksPanel = () => {
                               fontSize: "20px",
                             }}
                           >
-                            <span style={{ 
-                              textDecoration: isTaskCompleted ? 'line-through' : 'none',
-                              color: isTaskCompleted ? '#888' : 'inherit'
-                            }}>
+                            <span
+                              style={{
+                                textDecoration: isTaskCompleted
+                                  ? "line-through"
+                                  : "none",
+                                color: isTaskCompleted ? "#888" : "inherit",
+                              }}
+                            >
                               {task.title}
                             </span>
 
@@ -335,9 +350,10 @@ export const UpcomingTasksPanel = () => {
                                 alignItems: "center",
                               }}
                             >
-                              {activeTask?.id === task.id && !isTaskCompleted && (
-                                <span className="blinking-dot"></span>
-                              )}
+                              {activeTask?.id === task.id &&
+                                !isTaskCompleted && (
+                                  <span className="blinking-dot"></span>
+                                )}
 
                               {/* Show green circle for completed tasks, complete button for others */}
                               {isTaskCompleted ? (
@@ -379,53 +395,57 @@ export const UpcomingTasksPanel = () => {
                             </div>
                           </div>
 
-                      <Row justify={"space-between"} align={"middle"}>
-                        <div style={{ 
-                          textDecoration: isTaskCompleted ? 'line-through' : 'none',
-                          color: isTaskCompleted ? '#888' : 'inherit'
-                        }}>
-                          {task.description}
-                        </div>
-                        <div
-                          style={{
-                            display: "flex",
-                            gap: "10px",
-                            alignItems: "center",
-                          }}
-                        >
-                          <span
-                            style={{
-                              backgroundColor: "#2d3748",
-                              padding: "2px 8px",
-                              borderRadius: "8px",
-                              fontSize: "12px",
-                              color: isTaskCompleted ? "#666" : "#a0a0a0",
-                            }}
-                          >
-                            {formatTime(task.startTime)} -{" "}
-                            {formatTime(task.endTime)}
-                          </span>
-                          <span
-                            style={{
-                              backgroundColor: "#4a5568",
-                              padding: "2px 8px",
-                              borderRadius: "8px",
-                              fontSize: "12px",
-                              color: isTaskCompleted ? "#666" : "#cbd5e0",
-                            }}
-                          >
-                            {formatTimeUtil(
-                              calculateTaskDuration(
-                                task.startTime,
-                                task.endTime
-                              )
-                            )}
-                          </span>
-                        </div>
+                          <Row justify={"space-between"} align={"middle"}>
+                            <div
+                              style={{
+                                textDecoration: isTaskCompleted
+                                  ? "line-through"
+                                  : "none",
+                                color: isTaskCompleted ? "#888" : "inherit",
+                              }}
+                            >
+                              {task.description}
+                            </div>
+                            <div
+                              style={{
+                                display: "flex",
+                                gap: "10px",
+                                alignItems: "center",
+                              }}
+                            >
+                              <span
+                                style={{
+                                  backgroundColor: "#2d3748",
+                                  padding: "2px 8px",
+                                  borderRadius: "8px",
+                                  fontSize: "12px",
+                                  color: isTaskCompleted ? "#666" : "#a0a0a0",
+                                }}
+                              >
+                                {formatTime(task.startTime)} -{" "}
+                                {formatTime(task.endTime)}
+                              </span>
+                              <span
+                                style={{
+                                  backgroundColor: "#4a5568",
+                                  padding: "2px 8px",
+                                  borderRadius: "8px",
+                                  fontSize: "12px",
+                                  color: isTaskCompleted ? "#666" : "#cbd5e0",
+                                }}
+                              >
+                                {formatTimeUtil(
+                                  calculateTaskDuration(
+                                    task.startTime,
+                                    task.endTime
+                                  )
+                                )}
+                              </span>
+                            </div>
+                          </Row>
+                        </Col>
                       </Row>
-                    </Col>
-                  </Row>
-                </div>
+                    </div>
                   );
                 })}
             </div>

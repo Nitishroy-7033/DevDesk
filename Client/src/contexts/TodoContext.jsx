@@ -292,9 +292,12 @@ export const TodoProvider = ({ children }) => {
         taskIds: completedTaskIds,
         timestamp: Date.now(),
       };
-      localStorage.setItem(STORAGE_KEYS.COMPLETED_TASKS, JSON.stringify(completedData));
+      localStorage.setItem(
+        STORAGE_KEYS.COMPLETED_TASKS,
+        JSON.stringify(completedData)
+      );
     } catch (error) {
-      console.error('Error saving completed tasks:', error);
+      console.error("Error saving completed tasks:", error);
     }
   };
 
@@ -309,7 +312,7 @@ export const TodoProvider = ({ children }) => {
         }
       }
     } catch (error) {
-      console.error('Error loading completed tasks:', error);
+      console.error("Error loading completed tasks:", error);
     }
     return [];
   };
@@ -319,17 +322,19 @@ export const TodoProvider = ({ children }) => {
     if (state.tasks.length > 0) {
       const completedTaskIds = loadCompletedTasks();
       if (completedTaskIds.length > 0) {
-        const updatedTasks = state.tasks.map(task => ({
+        const updatedTasks = state.tasks.map((task) => ({
           ...task,
           isCompleted: completedTaskIds.includes(task.id),
-          status: completedTaskIds.includes(task.id) ? "completed" : task.status,
+          status: completedTaskIds.includes(task.id)
+            ? "completed"
+            : task.status,
         }));
-        
+
         // Only update if there are changes
-        const hasChanges = updatedTasks.some((task, index) => 
-          task.isCompleted !== state.tasks[index]?.isCompleted
+        const hasChanges = updatedTasks.some(
+          (task, index) => task.isCompleted !== state.tasks[index]?.isCompleted
         );
-        
+
         if (hasChanges) {
           dispatch({ type: actionTypes.SET_TASKS, payload: updatedTasks });
         }
@@ -531,11 +536,15 @@ export const TodoProvider = ({ children }) => {
 
         // Update demo task status locally - find task by ID and mark as completed
         const taskId = taskData.taskId || taskData.id;
-        const updatedTask = state.tasks.find(task => task.id === taskId);
+        const updatedTask = state.tasks.find((task) => task.id === taskId);
         if (updatedTask) {
-          const completedTask = { ...updatedTask, status: "completed", isCompleted: true };
+          const completedTask = {
+            ...updatedTask,
+            status: "completed",
+            isCompleted: true,
+          };
           dispatch({ type: actionTypes.UPDATE_TASK, payload: completedTask });
-          
+
           // Save completed task to localStorage for persistence in demo mode too
           const currentCompleted = loadCompletedTasks();
           const newCompleted = [...new Set([...currentCompleted, taskId])];
@@ -557,11 +566,15 @@ export const TodoProvider = ({ children }) => {
 
       // Mark task as completed locally immediately for better UX
       const taskId = taskData.taskId || taskData.id;
-      const updatedTask = state.tasks.find(task => task.id === taskId);
+      const updatedTask = state.tasks.find((task) => task.id === taskId);
       if (updatedTask) {
-        const completedTask = { ...updatedTask, status: "completed", isCompleted: true };
+        const completedTask = {
+          ...updatedTask,
+          status: "completed",
+          isCompleted: true,
+        };
         dispatch({ type: actionTypes.UPDATE_TASK, payload: completedTask });
-        
+
         // Save completed task to localStorage for persistence
         const currentCompleted = loadCompletedTasks();
         const newCompleted = [...new Set([...currentCompleted, taskId])];

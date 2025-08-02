@@ -101,23 +101,30 @@ export const ActiveTaskProvider = ({ children }) => {
   // Task-specific timer state management
   const saveTaskTimerState = (taskId, state) => {
     try {
-      const allTaskStates = JSON.parse(localStorage.getItem(STORAGE_KEYS.TASK_TIMER_STATES) || '{}');
+      const allTaskStates = JSON.parse(
+        localStorage.getItem(STORAGE_KEYS.TASK_TIMER_STATES) || "{}"
+      );
       allTaskStates[taskId] = {
         ...state,
         lastSaved: Date.now(),
       };
-      localStorage.setItem(STORAGE_KEYS.TASK_TIMER_STATES, JSON.stringify(allTaskStates));
+      localStorage.setItem(
+        STORAGE_KEYS.TASK_TIMER_STATES,
+        JSON.stringify(allTaskStates)
+      );
     } catch (error) {
-      console.error('Error saving task timer state:', error);
+      console.error("Error saving task timer state:", error);
     }
   };
 
   const loadTaskTimerState = (taskId) => {
     try {
-      const allTaskStates = JSON.parse(localStorage.getItem(STORAGE_KEYS.TASK_TIMER_STATES) || '{}');
+      const allTaskStates = JSON.parse(
+        localStorage.getItem(STORAGE_KEYS.TASK_TIMER_STATES) || "{}"
+      );
       return allTaskStates[taskId] || null;
     } catch (error) {
-      console.error('Error loading task timer state:', error);
+      console.error("Error loading task timer state:", error);
       return null;
     }
   };
@@ -246,12 +253,12 @@ export const ActiveTaskProvider = ({ children }) => {
     }
 
     const duration = calculateDuration(task.startTime, task.endTime);
-    
+
     // Try to load saved timer state for this task
     const savedState = loadTaskTimerState(task.id);
-    
+
     setActiveTask(task);
-    
+
     if (savedState && !savedState.isCompleted) {
       // Restore saved timer state
       setTotalTime(savedState.totalTime || duration);
@@ -269,7 +276,7 @@ export const ActiveTaskProvider = ({ children }) => {
       setTaskEndTime(null);
       setCompletionMethod(null);
     }
-    
+
     setIsRunning(false); // Always start paused when switching tasks
   };
 
@@ -278,7 +285,7 @@ export const ActiveTaskProvider = ({ children }) => {
     setAvailableTasks(tasks);
 
     // Filter out completed tasks
-    const nonCompletedTasks = tasks.filter(task => !task.isCompleted);
+    const nonCompletedTasks = tasks.filter((task) => !task.isCompleted);
 
     // If current active task is completed, clear it
     if (activeTask && activeTask.isCompleted) {
@@ -308,8 +315,10 @@ export const ActiveTaskProvider = ({ children }) => {
     if (!activeTask || availableTasks.length === 0) return null;
 
     // Filter out completed tasks
-    const nonCompletedTasks = availableTasks.filter(task => !task.isCompleted);
-    
+    const nonCompletedTasks = availableTasks.filter(
+      (task) => !task.isCompleted
+    );
+
     const currentIndex = nonCompletedTasks.findIndex(
       (task) => task.id === activeTask.id
     );
@@ -416,9 +425,11 @@ export const ActiveTaskProvider = ({ children }) => {
       setTaskStartTime(null);
       setTaskEndTime(null);
       setCompletionMethod(null);
-      
+
       // Try to find next non-completed task from available tasks
-      const nonCompletedTasks = availableTasks.filter(task => !task.isCompleted);
+      const nonCompletedTasks = availableTasks.filter(
+        (task) => !task.isCompleted
+      );
       if (nonCompletedTasks.length > 0) {
         setActiveTaskFromUpcoming(nonCompletedTasks[0]);
       }
