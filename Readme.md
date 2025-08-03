@@ -110,5 +110,5 @@ TaskMaster is a full-stack time management web application built using React.js,
 🧑‍🤝‍🧑 Share Tasks with Others
 ## License
 
-[MIT](https://github.com/Vikashverma2/V-Styled/blob/main/LICENSE)
+[MIT](https://github.com/Vikashverma2/ZappyTasks/blob/main/LICENSE)
 
