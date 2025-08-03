@@ -1,7 +1,7 @@
 
-# ⏱️ TaskMaster – Time Management Web App (Full Stack)
+# ⏱️ ZappyTasks – Time Management Web App (Full Stack)
  
-TaskMaster is a full-stack time management web application built using React.js, Tailwind CSS, .NET Web API, and MongoDB. It empowers users to create and track their daily tasks with a countdown timer, view task progress via a calendar interface, and stay organized with login-protected task management.
+ZappyTasks is a full-stack time management web application built using React.js, Tailwind CSS, .NET Web API, and MongoDB. It empowers users to create and track their daily tasks with a countdown timer, view task progress via a calendar interface, and stay organized with login-protected task management.
 
 
 
