@@ -1,5 +1,6 @@
 import { useReducer } from "react";
 import { Header } from "@/components/Header";
+import { DemoModeBanner } from "@/components/DemoModeBanner";
 import { ActiveTaskPanel } from "./components/ActiveTaskPanel";
 import { UpcomingTasksPanel } from "./components/UpcomingTasksPanel";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -44,6 +45,7 @@ const Home = () => {
               color: colors.textColor,
             }}
           >
+            <DemoModeBanner />
             <div
               className="grid grid-cols-1 lg:grid-cols-2 gap-8"
               style={{ height: "calc(100vh - 140px)" }}

@@ -1,6 +1,7 @@
 import { useReducer, useEffect } from "react";
 import { useAuth } from "@/pages/Auth/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { DemoModeBanner } from "@/components/DemoModeBanner";
 import { AddTaskDialog } from "@/components/AddTaskDialog";
 import { taskReducer, initialState } from "./context/Reducer";
 import * as actions from "./context/Actions";
@@ -46,10 +47,6 @@ const ManageTasks = () => {
   }
 
   // If not logged in, the useEffect will handle navigation
-  if (!isLoggedIn) {
-    return null;
-  }
-
   // Event handlers using action creators
   const handleViewChange = (view) => {
     actions.setActiveView(dispatch, view);
@@ -91,6 +88,7 @@ const ManageTasks = () => {
   return (
     <div>
       <main className="main-content">
+        <DemoModeBanner />
         <TasksHeader onAddTask={handleAddTask} onRefresh={handleRefresh} />
 
         <TasksTabs
