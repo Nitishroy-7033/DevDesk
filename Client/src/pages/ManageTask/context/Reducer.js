@@ -114,6 +114,29 @@ export const taskReducer = (state, action) => {
         error: action.payload,
       };
 
+    case actionTypes.DELETE_TASK_START:
+      return {
+        ...state,
+        loading: true,
+        error: null,
+      };
+
+    case actionTypes.DELETE_TASK_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        error: null,
+        // Remove deleted task from state
+        allTasks: state.allTasks.filter((task) => task.id !== action.payload),
+      };
+
+    case actionTypes.DELETE_TASK_ERROR:
+      return {
+        ...state,
+        loading: false,
+        error: action.payload,
+      };
+
     default:
       return state;
   }

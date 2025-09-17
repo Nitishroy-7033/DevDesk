@@ -99,6 +99,32 @@ export const handleCloseAddTask = (dispatch) => {
   setAddTaskOpen(dispatch, false);
 };
 
+// Delete task action
+export const deleteTask = async (dispatch, taskId) => {
+  try {
+    dispatch({ type: actionTypes.DELETE_TASK_START });
+    await taskAPI.deleteTask(taskId);
+    dispatch({
+      type: actionTypes.DELETE_TASK_SUCCESS,
+      payload: taskId,
+    });
+    // Refresh tasks after deletion
+    await fetchTasks(dispatch);
+  } catch (error) {
+    console.error("Failed to delete task:", error);
+    dispatch({
+      type: actionTypes.DELETE_TASK_ERROR,
+      payload: error.message,
+    });
+  }
+};
+
+// Edit task action (open edit modal)
+export const handleEditTask = (dispatch, task) => {
+  setSelectedTask(dispatch, task);
+  setAddTaskOpen(dispatch, true);
+};
+
 // Utility functions
 export const formatTime = (timeStr) => {
   // Remove the :00 seconds using regex

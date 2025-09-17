@@ -12,6 +12,8 @@ const TasksTabs = ({
   calendarTasks,
   allTasks,
   onTaskClick,
+  onEditTask,
+  onDeleteTask,
   formatTime,
 }) => {
   return (
@@ -40,7 +42,12 @@ const TasksTabs = ({
       </TabsContent>
 
       <TabsContent value="table">
-        <TasksTableView tasks={allTasks} onTaskClick={onTaskClick} />
+        <TasksTableView
+          tasks={allTasks}
+          onTaskClick={onTaskClick}
+          onEditTask={onEditTask}
+          onDeleteTask={onDeleteTask}
+        />
       </TabsContent>
     </Tabs>
   );

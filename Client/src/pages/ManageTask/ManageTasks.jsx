@@ -83,6 +83,15 @@ const ManageTasks = () => {
     actions.fetchTasks(dispatch);
   };
 
+  const handleDeleteTask = (taskId) => {
+    // Remove window.confirm since we're using Popconfirm in the table
+    actions.deleteTask(dispatch, taskId);
+  };
+
+  const handleEditTask = (task) => {
+    actions.handleEditTask(dispatch, task);
+  };
+
   return (
     <div>
       <main className="main-content">
@@ -96,6 +105,8 @@ const ManageTasks = () => {
           calendarTasks={calendarTasks}
           allTasks={allTasks}
           onTaskClick={handleTaskClick}
+          onEditTask={handleEditTask}
+          onDeleteTask={handleDeleteTask}
           formatTime={actions.formatTime}
         />
       </main>
@@ -112,7 +123,8 @@ const ManageTasks = () => {
       <AddTaskDialog
         open={isAddTaskOpen}
         onOpenChange={handleCloseAddTask}
-        mode="add"
+        mode={selectedTask ? "edit" : "add"}
+        task={selectedTask}
       />
 
       {/* Error Display */}
