@@ -18,7 +18,7 @@ export const handleLogin = async (
       title: "Success",
       description: "Logged in successfully!",
     });
-    navigate(config.routes.manageTasks);
+    navigate(config.routes.home);
   } catch (error) {
     console.error("Authentication error:", error);
     dispatch({ type: SET_ERRORS, payload: { general: "Invalid credentials" } });
@@ -55,7 +55,7 @@ export const handleSignup = async (
       title: "Success",
       description: "Account created successfully!",
     });
-    navigate(config.routes.manageTasks);
+    navigate(config.routes.home);
   } catch (error) {
     console.error("Authentication error:", error);
     dispatch({

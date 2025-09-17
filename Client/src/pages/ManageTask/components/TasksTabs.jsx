@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar as CalendarIcon, Filter, List } from "lucide-react";
-import TasksCalendarView from "./TasksCalendarView";
-import TasksTableView from "./TasksTableView";
+import TasksCalendarView from "@/components/Tasks/TasksCalendarView";
+import TasksTableView from "@/components/Tasks/TasksTableView";
 
 const TasksTabs = ({
   activeView,
@@ -12,6 +12,8 @@ const TasksTabs = ({
   calendarTasks,
   allTasks,
   onTaskClick,
+  onEditTask,
+  onDeleteTask,
   formatTime,
 }) => {
   return (
@@ -40,7 +42,12 @@ const TasksTabs = ({
       </TabsContent>
 
       <TabsContent value="table">
-        <TasksTableView tasks={allTasks} onTaskClick={onTaskClick} />
+        <TasksTableView
+          tasks={allTasks}
+          onTaskClick={onTaskClick}
+          onEditTask={onEditTask}
+          onDeleteTask={onDeleteTask}
+        />
       </TabsContent>
     </Tabs>
   );

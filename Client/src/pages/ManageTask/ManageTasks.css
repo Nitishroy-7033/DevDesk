@@ -168,8 +168,6 @@
   gap: 1.5rem;
 }
 
-
-
 @media (min-width: 1024px) {
   .calendar-view {
     grid-template-columns: 1fr 2fr;
@@ -188,6 +186,17 @@
   opacity: 0.3;
   margin: 0 auto 1rem;
 }
+
+.error-banner {
+  background-color: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 1rem;
+  margin: 1rem;
+  border-radius: 8px;
+  text-align: center;
+}
+
 /* Dark theme for Ant Design Table */
 .ant-table {
   background-color: #323639 !important;

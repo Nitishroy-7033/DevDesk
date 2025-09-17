@@ -59,7 +59,7 @@ const config = {
 
   // Routes
   routes: {
-    home: "/",
+    home: "/home",
     login: "/login",
     manageTasks: "/manage-tasks",
     progress: "/progress",

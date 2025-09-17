@@ -6,9 +6,8 @@ WORKDIR /app/frontend
 
 # Copy frontend package files
 COPY Client/package*.json ./
-COPY Client/bun.lockb ./
 
-# Install frontend dependencies
+# Install frontend dependencies (ignore bun.lockb and use npm for Docker compatibility)
 RUN npm install
 
 # Copy frontend source code
@@ -41,8 +40,10 @@ RUN apk add --no-cache nginx supervisor
 
 # Create directories
 RUN mkdir -p /var/log/supervisor \
+    && mkdir -p /var/log/nginx \
     && mkdir -p /var/www/html \
-    && mkdir -p /app/backend
+    && mkdir -p /app/backend \
+    && mkdir -p /etc/supervisor/conf.d
 
 # Copy built frontend from frontend-build stage
 COPY --from=frontend-build /app/frontend/dist /var/www/html
@@ -53,23 +54,12 @@ COPY --from=backend-build /app/backend/out /app/backend
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Create supervisor configuration
-RUN echo '[supervisord]' > /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'nodaemon=true' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo '' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo '[program:nginx]' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'command=nginx -g "daemon off;"' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'stdout_logfile=/var/log/supervisor/nginx.log' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'stderr_logfile=/var/log/supervisor/nginx.log' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'autorestart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo '' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo '[program:dotnet]' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'command=dotnet /app/backend/TaskManager.dll' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'directory=/app/backend' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'stdout_logfile=/var/log/supervisor/dotnet.log' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'stderr_logfile=/var/log/supervisor/dotnet.log' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'autorestart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'environment=ASPNETCORE_ENVIRONMENT=Production,ASPNETCORE_URLS=http://localhost:5175' >> /etc/supervisor/conf.d/supervisord.conf
+# Copy supervisor configuration
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Copy startup script
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
 
 # Expose port 80 for nginx
 EXPOSE 80
@@ -77,14 +67,6 @@ EXPOSE 80
 # Set environment variables for .NET
 ENV ASPNETCORE_ENVIRONMENT=Production
 ENV ASPNETCORE_URLS=http://localhost:5175
-
-# Create a startup script
-RUN echo '#!/bin/sh' > /start.sh && \
-    echo 'echo "Starting ZappyTasks application..."' >> /start.sh && \
-    echo 'echo "Frontend will be served at: http://localhost"' >> /start.sh && \
-    echo 'echo "Backend API will be available at: http://localhost/api"' >> /start.sh && \
-    echo 'supervisord -c /etc/supervisor/conf.d/supervisord.conf' >> /start.sh && \
-    chmod +x /start.sh
 
 # Start both services using supervisor
 CMD ["/start.sh"]

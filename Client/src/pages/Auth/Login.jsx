@@ -1,4 +1,4 @@
-import { useReducer } from "react";
+import { useReducer, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -18,9 +18,16 @@ export const Login = () => {
   const [state, dispatch] = useReducer(authReducer, initialState);
   const { isSignUp, phone, password, name, confirmPassword } = state;
 
-  const { login } = useAuth();
+  const { login, isLoggedIn, isLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Check if user is already logged in
+  useEffect(() => {
+    if (!isLoading && isLoggedIn) {
+      navigate(config.routes.home);
+    }
+  }, [isLoggedIn, isLoading, navigate]);
 
   const validateForm = () => {
     const newErrors = {};

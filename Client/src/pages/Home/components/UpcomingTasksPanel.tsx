@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Calendar,
   Clock,
@@ -19,8 +19,8 @@ import { Checkbox, Col, Input, Row } from "antd";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format, addDays, subDays, isToday } from "date-fns";
-import { AddTaskDialog } from "../components/AddTaskDialog.jsx";
-import LogHoursDialog from "../components/LogHoursDialog.jsx";
+import { AddTaskDialog } from "@/components/AddTaskDialog";
+import LogHoursDialog from "@/components/LogHoursDialog.jsx";
 
 import {
   DropdownMenu,
@@ -40,14 +40,14 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { Avatar, AvatarFallback } from "@radix-ui/react-avatar";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/pages/Auth/contexts/AuthContext";
-import NoTaskMessage from "./Tasks/NoTaskMessage.jsx";
+import NoTaskMessage from "@/components/Tasks/NoTaskMessage.jsx";
 import "./UpcomingTasksPanel.css";
 import { useTodo } from "@/contexts/TodoContext";
 import { useTaskManager } from "@/hooks/useTaskManager";
 import { useActiveTask } from "@/contexts/ActiveTaskContext";
 import { calculateTaskDuration, formatTime } from "@/utils/timeUtils";
 import { taskAPI } from "@/lib/api";
-import DemoModeBanner from "./DemoModeBanner.jsx";
+import DemoModeBanner from "@/components/DemoModeBanner.jsx";
 interface Task {
   id: string;
   title: string;
@@ -76,7 +76,7 @@ export const UpcomingTasksPanel = () => {
 
   const handleLogout = () => {
     logout();
-    navigate("/");
+    navigate("/login");
     setStatusFilter("Pending");
     fetchTasks([]); // Clear the todo list
   };
@@ -117,14 +117,21 @@ export const UpcomingTasksPanel = () => {
     setActiveTaskFromUpcoming(task);
   };
 
-  const getUpcomingTask = async () => {
+  const getUpcomingTask = useCallback(async () => {
     try {
-      const today = new Date().toISOString().split("T")[0];
-      await fetchTasks(today, statusFilter);
+      // Get today's date in local timezone (YYYY-MM-DD format)
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, "0");
+      const day = String(today.getDate()).padStart(2, "0");
+      const localDateString = `${year}-${month}-${day}`;
+
+      console.log("Fetching tasks for date:", localDateString);
+      await fetchTasks(localDateString, statusFilter);
     } catch (error) {
       console.error("Error fetching upcoming tasks:", error);
     }
-  };
+  }, [fetchTasks, statusFilter]);
   function formatTimeUtil(totalSeconds) {
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -143,7 +150,7 @@ export const UpcomingTasksPanel = () => {
 
   useEffect(() => {
     getUpcomingTask();
-  }, [statusFilter]);
+  }, []);
 
   // Auto-set first task as active when tasks are loaded and no active task exists
   useEffect(() => {
@@ -450,10 +457,12 @@ export const UpcomingTasksPanel = () => {
                 })}
             </div>
           )}
+
           <AddTaskDialog
             open={isAddTaskOpen}
             onOpenChange={setIsAddTaskOpen}
             mode="add"
+            onTaskAdded={getUpcomingTask}
           />
 
           {selectedTask && (
