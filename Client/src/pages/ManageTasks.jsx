@@ -8,7 +8,7 @@ import TasksTabs from "../components/Tasks/TasksTabs";
 import useTaskManagement from "../hooks/useTaskManagement";
 
 export const ManageTasks = () => {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, isLoading } = useAuth();
   const navigate = useNavigate();
 
   const {
@@ -30,12 +30,14 @@ export const ManageTasks = () => {
   } = useTaskManagement();
 
   useEffect(() => {
-    if (!isLoggedIn) {
-      navigate("/");
-    } else {
-      fetchTasks();
+    if (!isLoading) {
+      if (!isLoggedIn) {
+        navigate("/login");
+      } else {
+        fetchTasks();
+      }
     }
-  }, [isLoggedIn, navigate, fetchTasks]);
+  }, [isLoggedIn, isLoading, navigate, fetchTasks]);
 
   return (
     <div>

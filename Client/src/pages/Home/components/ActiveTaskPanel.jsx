@@ -1,6 +1,6 @@
 // ActiveTaskPanel.jsx
 import { useState, useEffect } from "react";
-import "./AddTaskDialog.css";
+import "./ActiveTaskPanel.css";
 import {
   Maximize,
   Play,
@@ -19,14 +19,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import TimerDisplay, { formatTime } from "./Timer/TimerDisplay";
-import TaskControls from "./Timer/TaskControls";
-import CompletedCard from "./Timer/CompletedCard";
+import TimerDisplay, {
+  formatTime,
+} from "../../../components/Timer/TimerDisplay";
+import TaskControls from "../../../components/Timer/TaskControls";
+import CompletedCard from "../../../components/Timer/CompletedCard";
 import { Col, Progress, Row } from "antd";
 import FlipClockCountdown from "@leenguyen/react-flip-clock-countdown";
 import { useActiveTask } from "@/contexts/ActiveTaskContext";
 import { formatTime as formatTimeUtil } from "@/utils/timeUtils";
-import EnhancedCompleteTaskDialog from "./EnhancedCompleteTaskDialog";
+import EnhancedCompleteTaskDialog from "../../../components/EnhancedCompleteTaskDialog";
 
 export const ActiveTaskPanel = ({
   isFullscreen = false,

@@ -7,7 +7,8 @@ import { AuthProvider } from "@/pages/Auth/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { TodoProvider } from "@/contexts/TodoContext";
 import { ActiveTaskProvider } from "@/contexts/ActiveTaskContext";
-import Index from "./pages/HomePage/Index";
+import Home from "./pages/Home/Home";
+import Index from "./pages/Index";
 import ManageTasks from "./pages/ManageTasks";
 import Progress from "./pages/Progress";
 import NotFound from "./pages/NotFound";
@@ -27,10 +28,10 @@ const App = () => (
               <BrowserRouter>
                 <Routes>
                   <Route path="/" element={<Index />} />
+                  <Route path="/home" element={<Home />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/manage-tasks" element={<ManageTasks />} />
                   <Route path="/progress" element={<Progress />} />
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>

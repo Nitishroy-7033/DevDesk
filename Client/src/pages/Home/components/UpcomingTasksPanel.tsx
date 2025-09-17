@@ -19,8 +19,8 @@ import { Checkbox, Col, Input, Row } from "antd";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format, addDays, subDays, isToday } from "date-fns";
-import { AddTaskDialog } from "../components/AddTaskDialog.jsx";
-import LogHoursDialog from "../components/LogHoursDialog.jsx";
+import { AddTaskDialog } from "@/components/AddTaskDialog.jsx";
+import LogHoursDialog from "@/components/LogHoursDialog.jsx";
 
 import {
   DropdownMenu,
@@ -40,14 +40,14 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { Avatar, AvatarFallback } from "@radix-ui/react-avatar";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/pages/Auth/contexts/AuthContext";
-import NoTaskMessage from "./Tasks/NoTaskMessage.jsx";
+import NoTaskMessage from "@/components/Tasks/NoTaskMessage.jsx";
 import "./UpcomingTasksPanel.css";
 import { useTodo } from "@/contexts/TodoContext";
 import { useTaskManager } from "@/hooks/useTaskManager";
 import { useActiveTask } from "@/contexts/ActiveTaskContext";
 import { calculateTaskDuration, formatTime } from "@/utils/timeUtils";
 import { taskAPI } from "@/lib/api";
-import DemoModeBanner from "./DemoModeBanner.jsx";
+import DemoModeBanner from "@/components/DemoModeBanner.jsx";
 interface Task {
   id: string;
   title: string;
@@ -76,7 +76,7 @@ export const UpcomingTasksPanel = () => {
 
   const handleLogout = () => {
     logout();
-    navigate("/");
+    navigate("/login");
     setStatusFilter("Pending");
     fetchTasks([]); // Clear the todo list
   };
