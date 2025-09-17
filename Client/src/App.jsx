@@ -10,7 +10,7 @@ import { ActiveTaskProvider } from "@/contexts/ActiveTaskContext";
 import Home from "./pages/Home/Home";
 import Index from "./pages/Index";
 import ManageTasks from "./pages/ManageTask/ManageTasks";
-import Progress from "./pages/Progress";
+import Progress from "./pages/Progress/Progress";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Auth/Login";
 
