@@ -9,11 +9,8 @@ const Index = () => {
   useEffect(() => {
     // Only redirect once auth state is determined
     if (!isLoading) {
-      if (isLoggedIn) {
-        navigate("/home");
-      } else {
-        navigate("/login");
-      }
+      // Always redirect to home - authentication is now optional
+      navigate("/home");
     }
   }, [isLoggedIn, isLoading, navigate]);
 
