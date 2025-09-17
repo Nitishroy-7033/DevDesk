@@ -390,6 +390,8 @@ export const TodoProvider = ({ children }) => {
         type: actionTypes.SET_ERROR,
         payload: error.message || "Failed to fetch tasks",
       });
+    } finally {
+      setLoading(false);
     }
   };
 

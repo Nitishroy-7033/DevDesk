@@ -143,6 +143,19 @@ export const validateForm = (state) => {
   };
 };
 
+// Helper function to format time to "8:15:00 PM" format
+const formatTimeString = (date) => {
+  if (!date) return null;
+
+  const timeDate = new Date(date);
+  return timeDate.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
+};
+
 // API actions
 export const createTask = async (dispatch, state, toast, onSuccess) => {
   try {
@@ -186,21 +199,22 @@ export const createTask = async (dispatch, state, toast, onSuccess) => {
       userId,
       title: state.title.trim(),
       description: state.description.trim(),
-      startTime: state.startTime
-        ? new Date(state.startTime).toISOString()
-        : null,
-      endTime: state.endTime ? new Date(state.endTime).toISOString() : null,
+      startTime: formatTimeString(state.startTime),
+      endTime: formatTimeString(state.endTime),
       startDate: state.startDate
         ? new Date(state.startDate).toISOString().split("T")[0]
         : null,
       endDate: state.endDate
         ? new Date(state.endDate).toISOString().split("T")[0]
         : null,
-      icon: state.icon || "📝",
+      iconName: state.icon || "📝",
       repeatType: state.repeatType || "daily",
       repeatDays: state.repeatDays || [],
       status: "pending",
     };
+
+    // Debug: Log the formatted task data
+    console.log("Task data being sent:", taskData);
 
     // Make API call
     const response = await apiClient.post("/Task", taskData);

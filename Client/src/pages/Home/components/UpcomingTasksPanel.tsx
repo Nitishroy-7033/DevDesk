@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Calendar,
   Clock,
@@ -117,14 +117,21 @@ export const UpcomingTasksPanel = () => {
     setActiveTaskFromUpcoming(task);
   };
 
-  const getUpcomingTask = async () => {
+  const getUpcomingTask = useCallback(async () => {
     try {
-      const today = new Date().toISOString().split("T")[0];
-      await fetchTasks(today, statusFilter);
+      // Get today's date in local timezone (YYYY-MM-DD format)
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, "0");
+      const day = String(today.getDate()).padStart(2, "0");
+      const localDateString = `${year}-${month}-${day}`;
+
+      console.log("Fetching tasks for date:", localDateString);
+      await fetchTasks(localDateString, statusFilter);
     } catch (error) {
       console.error("Error fetching upcoming tasks:", error);
     }
-  };
+  }, [fetchTasks, statusFilter]);
   function formatTimeUtil(totalSeconds) {
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -143,7 +150,7 @@ export const UpcomingTasksPanel = () => {
 
   useEffect(() => {
     getUpcomingTask();
-  }, [statusFilter]);
+  }, []);
 
   // Auto-set first task as active when tasks are loaded and no active task exists
   useEffect(() => {
@@ -455,6 +462,7 @@ export const UpcomingTasksPanel = () => {
             open={isAddTaskOpen}
             onOpenChange={setIsAddTaskOpen}
             mode="add"
+            onTaskAdded={getUpcomingTask}
           />
 
           {selectedTask && (

@@ -21,6 +21,7 @@ export const AddTaskDialog = ({
   onOpenChange,
   mode = "add",
   task = null,
+  onTaskAdded,
 }) => {
   const [state, dispatch] = useReducer(addTaskReducer, initialState);
   const {
@@ -100,6 +101,9 @@ export const AddTaskDialog = ({
     await actions.createTask(dispatch, state, toast, () => {
       // Close dialog after successful creation
       onOpenChange(false);
+      if (onTaskAdded) {
+        onTaskAdded();
+      }
       // You can add additional success handling here if needed
     });
   };
