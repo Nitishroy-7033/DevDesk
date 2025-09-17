@@ -19,7 +19,7 @@ import { Checkbox, Col, Input, Row } from "antd";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format, addDays, subDays, isToday } from "date-fns";
-import { AddTaskDialog } from "@/components/AddTaskDialog.jsx";
+import { AddTaskDialog } from "@/components/AddTaskDialog";
 import LogHoursDialog from "@/components/LogHoursDialog.jsx";
 
 import {
@@ -450,6 +450,7 @@ export const UpcomingTasksPanel = () => {
                 })}
             </div>
           )}
+
           <AddTaskDialog
             open={isAddTaskOpen}
             onOpenChange={setIsAddTaskOpen}
