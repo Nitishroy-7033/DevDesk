@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/pages/Auth/contexts/AuthContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 export const Header = () => {
@@ -18,7 +18,7 @@ export const Header = () => {
 
   const handleLogout = () => {
     logout();
-    navigate('/');
+    navigate("/");
   };
 
   return (
@@ -26,9 +26,13 @@ export const Header = () => {
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <div className="w-6 h-6 bg-primary rounded-md flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-xs">SP</span>
+            <span className="text-primary-foreground font-bold text-xs">
+              SP
+            </span>
           </div>
-          <h1 className="text-lg font-semibold text-foreground">Study Planner</h1>
+          <h1 className="text-lg font-semibold text-foreground">
+            Study Planner
+          </h1>
         </div>
 
         <div className="flex items-center space-x-2">
@@ -43,25 +47,28 @@ export const Header = () => {
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-48 bg-popover border shadow-lg" align="end">
+            <DropdownMenuContent
+              className="w-48 bg-popover border shadow-lg"
+              align="end"
+            >
               {isLoggedIn ? (
                 <>
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     className="cursor-pointer"
-                    onClick={() => navigate('/manage-tasks')}
+                    onClick={() => navigate("/manage-tasks")}
                   >
                     <Settings className="mr-2 h-4 w-4" />
                     Manage Tasks
                   </DropdownMenuItem>
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     className="cursor-pointer"
-                    onClick={() => navigate('/progress')}
+                    onClick={() => navigate("/progress")}
                   >
                     <BarChart3 className="mr-2 h-4 w-4" />
                     Progress
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     className="cursor-pointer text-destructive"
                     onClick={handleLogout}
                   >
@@ -70,9 +77,9 @@ export const Header = () => {
                   </DropdownMenuItem>
                 </>
               ) : (
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   className="cursor-pointer"
-                  onClick={() => navigate('/login')}
+                  onClick={() => navigate("/login")}
                 >
                   <LogIn className="mr-2 h-4 w-4" />
                   Login

@@ -3,15 +3,15 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider } from "@/pages/Auth/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { TodoProvider } from "@/contexts/TodoContext";
 import { ActiveTaskProvider } from "@/contexts/ActiveTaskContext";
 import Index from "./pages/Index";
-import Login from "./pages/Login";
 import ManageTasks from "./pages/ManageTasks";
 import Progress from "./pages/Progress";
 import NotFound from "./pages/NotFound";
+import Login from "./pages/Auth/Login";
 
 const queryClient = new QueryClient();
 

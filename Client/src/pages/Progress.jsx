@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Trophy, Clock, Target, TrendingUp, Calendar, User, Award, CheckCircle2, BarChart3, Timer } from "lucide-react";
 import { useTodo } from "@/contexts/TodoContext";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/pages/Auth/contexts/AuthContext";
 import { apiClient } from "@/lib/api-client";
 import './Progress.css'
 

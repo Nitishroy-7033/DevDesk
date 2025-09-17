@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { AddTaskDialog } from "@/components/AddTaskDialog";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/pages/Auth/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import "./ManageTasks.css";
 import TasksHeader from "../components/Tasks/TasksHeader";

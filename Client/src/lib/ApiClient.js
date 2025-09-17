@@ -34,7 +34,7 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       // Token expired or invalid
       localStorage.clear();
-      if (window.location.pathname !== '/login') {
+      if (window.location.pathname !== "/login") {
         window.location.href = "/login";
       }
     }
@@ -56,7 +56,7 @@ export const authAPI = {
     }
   },
 
-  async register(userData) {
+  async signup(userData) {
     try {
       const response = await apiClient.post(config.endpoints.user.register, {
         name: userData.name.trim(),
@@ -72,7 +72,7 @@ export const authAPI = {
   async logout() {
     try {
       // Clear local storage
-      Object.values(config.storageKeys).forEach(key => {
+      Object.values(config.storageKeys).forEach((key) => {
         localStorage.removeItem(key);
       });
       return { success: true };
@@ -85,8 +85,10 @@ export const authAPI = {
     try {
       const userId = localStorage.getItem(config.storageKeys.userId);
       if (!userId) return null;
-      
-      const response = await apiClient.get(`${config.endpoints.user.profile}/${userId}`);
+
+      const response = await apiClient.get(
+        `${config.endpoints.user.profile}/${userId}`
+      );
       return response.data;
     } catch (error) {
       return null;
