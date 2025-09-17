@@ -6,9 +6,8 @@ WORKDIR /app/frontend
 
 # Copy frontend package files
 COPY Client/package*.json ./
-COPY Client/bun.lockb ./
 
-# Install frontend dependencies
+# Install frontend dependencies (ignore bun.lockb and use npm for Docker compatibility)
 RUN npm install
 
 # Copy frontend source code
@@ -41,8 +40,10 @@ RUN apk add --no-cache nginx supervisor
 
 # Create directories
 RUN mkdir -p /var/log/supervisor \
+    && mkdir -p /var/log/nginx \
     && mkdir -p /var/www/html \
-    && mkdir -p /app/backend
+    && mkdir -p /app/backend \
+    && mkdir -p /etc/supervisor/conf.d
 
 # Copy built frontend from frontend-build stage
 COPY --from=frontend-build /app/frontend/dist /var/www/html

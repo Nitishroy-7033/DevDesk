@@ -1,0 +1,39 @@
+# Client-side ignores
+Client/node_modules
+Client/dist
+Client/.vite
+Client/.env.local
+Client/.env.development.local
+Client/.env.test.local
+Client/.env.production.local
+
+# Server-side ignores
+Server/TaskManager/bin
+Server/TaskManager/obj
+Server/TaskManager/.vs
+
+# Git and IDE files
+.git
+.gitignore
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker files
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Documentation
+*.md
+LICENSE
+
+# Logs
+logs/
+*.log
