@@ -26,16 +26,12 @@ const ManageTasks = () => {
   const { isLoggedIn, isLoading } = useAuth();
   const navigate = useNavigate();
 
-  // Authentication check
+  // Fetch tasks when component loads (works for both logged in and demo mode)
   useEffect(() => {
     if (!isLoading) {
-      if (!isLoggedIn) {
-        navigate("/login");
-      } else {
-        actions.fetchTasks(dispatch);
-      }
+      actions.fetchTasks(dispatch);
     }
-  }, [isLoggedIn, isLoading, navigate]);
+  }, [isLoading]);
 
   // Show loading while auth state is being determined
   if (isLoading) {

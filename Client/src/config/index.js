@@ -2,9 +2,10 @@
 
 const config = {
   // API Configuration
-  apiUrl: import.meta.env.VITE_API_URL || 
-    (import.meta.env.MODE === "production" 
-      ? "https://devworkbench.onrender.com/api" 
+  apiUrl:
+    import.meta.env.VITE_API_URL ||
+    (import.meta.env.MODE === "production"
+      ? "https://devworkbench.onrender.com/api"
       : "http://localhost:5175"),
   appName: import.meta.env.VITE_APP_NAME || "ZappyTasks",
 
