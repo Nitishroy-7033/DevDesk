@@ -7,7 +7,7 @@ import { AuthProvider } from "@/pages/Auth/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { TodoProvider } from "@/contexts/TodoContext";
 import { ActiveTaskProvider } from "@/contexts/ActiveTaskContext";
-import Index from "./pages/Index";
+import Index from "./pages/HomePage/Index";
 import ManageTasks from "./pages/ManageTasks";
 import Progress from "./pages/Progress";
 import NotFound from "./pages/NotFound";
